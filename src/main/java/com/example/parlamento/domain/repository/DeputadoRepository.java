@@ -20,6 +20,9 @@ public interface DeputadoRepository extends JpaRepository<Deputado, Long> {
 	@EntityGraph(attributePaths = "partido")
 	Optional<Deputado> findComPartidoById(Long id);
 
+	@EntityGraph(attributePaths = "partido")
+	Page<Deputado> findByPartidoId(Long partidoId, Pageable pageable);
+
 	@Query("select d.id from Deputado d order by d.id")
 	List<Long> findAllIds();
 }

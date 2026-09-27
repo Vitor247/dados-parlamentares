@@ -1,5 +1,6 @@
 package com.example.parlamento.api.controller;
 
+import com.example.parlamento.api.dto.DeputadoResumoDto;
 import com.example.parlamento.api.dto.PaginaDto;
 import com.example.parlamento.api.dto.PartidoDto;
 import com.example.parlamento.api.service.PartidoConsultaService;
@@ -29,5 +30,12 @@ public class PartidoController {
 	@GetMapping("/{id}")
 	public PartidoDto buscar(@PathVariable Long id) {
 		return service.buscar(id);
+	}
+
+	@GetMapping("/{id}/deputados")
+	public PaginaDto<DeputadoResumoDto> listarDeputados(
+			@PathVariable Long id,
+			@PageableDefault(sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+		return service.listarDeputados(id, pageable);
 	}
 }
