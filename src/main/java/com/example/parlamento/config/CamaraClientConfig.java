@@ -19,7 +19,7 @@ import org.springframework.web.client.RestClient;
 import java.net.http.HttpClient;
 
 @Configuration
-@EnableConfigurationProperties(CamaraProperties.class)
+@EnableConfigurationProperties({CamaraProperties.class, IngestaoProperties.class})
 public class CamaraClientConfig {
 
 	private static final Logger log = LoggerFactory.getLogger(CamaraClientConfig.class);

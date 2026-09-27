@@ -60,8 +60,13 @@ public class CamaraClient {
 		this.itensPorPagina = props.itensPorPagina();
 	}
 
-	public List<PartidoCamaraDto> listarPartidos() {
+	/**
+	 * Partidos com representação na legislatura. Sem o filtro, a fonte devolve só os
+	 * partidos atuais e omite os extintos/incorporados que ainda aparecem na legislatura.
+	 */
+	public List<PartidoCamaraDto> listarPartidos(int idLegislatura) {
 		return listarTodasPaginas("/partidos", uri -> uri
+				.queryParam("idLegislatura", idLegislatura)
 				.queryParam("ordem", "ASC")
 				.queryParam("ordenarPor", "id"), LISTA_PARTIDOS);
 	}
