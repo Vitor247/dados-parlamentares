@@ -48,16 +48,7 @@ public final class ProposicaoSpecs {
 
 	/** Trecho da ementa, sem diferenciar maiúsculas (ILIKE %valor%). */
 	public static Specification<Proposicao> ementaContem(String trecho) {
-		if (trecho == null || trecho.isBlank()) {
-			return Specification.unrestricted();
-		}
-		String padrao = "%" + escaparLike(trecho.strip().toLowerCase(Locale.ROOT)) + "%";
-		return (root, query, cb) -> cb.like(cb.lower(root.get("ementa")), padrao, '\\');
-	}
-
-	/** Escapa os curingas do LIKE para que "%" e "_" digitados sejam literais. */
-	static String escaparLike(String valor) {
-		return valor.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+		return TextoSpecs.contem("ementa", trecho);
 	}
 
 	/** Sigla do tipo sem diferenciar maiúsculas ("pl" = "PL"). */

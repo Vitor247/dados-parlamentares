@@ -9,6 +9,7 @@ import com.example.parlamento.api.mapper.ProposicaoApiMapper;
 import com.example.parlamento.domain.entity.Deputado;
 import com.example.parlamento.domain.entity.Proposicao;
 import com.example.parlamento.domain.repository.DeputadoRepository;
+import com.example.parlamento.domain.repository.DeputadoSpecs;
 import com.example.parlamento.domain.repository.ProposicaoAutorRepository;
 import com.example.parlamento.domain.repository.ProposicaoRepository;
 import com.example.parlamento.exception.RecursoNaoEncontradoException;
@@ -43,8 +44,10 @@ public class DeputadoConsultaService {
 		this.proposicaoMapper = proposicaoMapper;
 	}
 
-	public PaginaDto<DeputadoResumoDto> listar(Pageable pageable) {
-		return PaginaDto.de(repository.findAll(pageable), mapper::paraResumo, Deputado::getAtualizadoEm);
+	public PaginaDto<DeputadoResumoDto> listar(String uf, String partido, String nome, Pageable pageable) {
+		Specification<Deputado> filtro = Specification.allOf(List.of(
+				DeputadoSpecs.daUf(uf), DeputadoSpecs.doPartido(partido), DeputadoSpecs.nomeContem(nome)));
+		return PaginaDto.de(repository.findAll(filtro, pageable), mapper::paraResumo, Deputado::getAtualizadoEm);
 	}
 
 	public DeputadoDto buscar(Long id) {

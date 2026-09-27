@@ -24,9 +24,18 @@ public class DeputadoController {
 		this.service = service;
 	}
 
+	/**
+	 * @param uf      sigla da UF (MG, SP...)
+	 * @param partido sigla do partido (PT, PL...), resolvida internamente para o id
+	 * @param nome    trecho do nome parlamentar, sem diferenciar maiúsculas
+	 */
 	@GetMapping
-	public PaginaDto<DeputadoResumoDto> listar(@PageableDefault(sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
-		return service.listar(pageable);
+	public PaginaDto<DeputadoResumoDto> listar(
+			@RequestParam(required = false) String uf,
+			@RequestParam(required = false) String partido,
+			@RequestParam(required = false) String nome,
+			@PageableDefault(sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+		return service.listar(uf, partido, nome, pageable);
 	}
 
 	@GetMapping("/{id}")
