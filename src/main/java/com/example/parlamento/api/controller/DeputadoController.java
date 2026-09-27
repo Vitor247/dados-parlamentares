@@ -1,0 +1,34 @@
+package com.example.parlamento.api.controller;
+
+import com.example.parlamento.api.dto.DeputadoDto;
+import com.example.parlamento.api.dto.DeputadoResumoDto;
+import com.example.parlamento.api.dto.PaginaDto;
+import com.example.parlamento.api.service.DeputadoConsultaService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/deputados")
+public class DeputadoController {
+
+	private final DeputadoConsultaService service;
+
+	public DeputadoController(DeputadoConsultaService service) {
+		this.service = service;
+	}
+
+	@GetMapping
+	public PaginaDto<DeputadoResumoDto> listar(@PageableDefault(sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+		return service.listar(pageable);
+	}
+
+	@GetMapping("/{id}")
+	public DeputadoDto buscar(@PathVariable Long id) {
+		return service.buscar(id);
+	}
+}
