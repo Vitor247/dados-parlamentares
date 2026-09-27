@@ -23,7 +23,7 @@ public class PartidoController {
 	}
 
 	@GetMapping
-	public PaginaDto<PartidoDto> listar(@PageableDefault(sort = "sigla", direction = Sort.Direction.ASC) Pageable pageable) {
+	public PaginaDto<PartidoDto> listar(@PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = "sigla", direction = Sort.Direction.ASC) Pageable pageable) {
 		return service.listar(pageable);
 	}
 
@@ -35,7 +35,7 @@ public class PartidoController {
 	@GetMapping("/{id}/deputados")
 	public PaginaDto<DeputadoResumoDto> listarDeputados(
 			@PathVariable Long id,
-			@PageableDefault(sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+			@PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
 		return service.listarDeputados(id, pageable);
 	}
 }

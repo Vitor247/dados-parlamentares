@@ -31,7 +31,7 @@ public class ProposicaoController {
 			@RequestParam(required = false) String tipo,
 			@RequestParam(required = false) Integer numero,
 			@RequestParam(required = false) String ementa,
-			@PageableDefault(sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
+			@PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
 		return service.listar(ano, tipo, numero, ementa, pageable);
 	}
 

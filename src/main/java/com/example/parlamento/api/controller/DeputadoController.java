@@ -34,7 +34,7 @@ public class DeputadoController {
 			@RequestParam(required = false) String uf,
 			@RequestParam(required = false) String partido,
 			@RequestParam(required = false) String nome,
-			@PageableDefault(sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+			@PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
 		return service.listar(uf, partido, nome, pageable);
 	}
 
@@ -48,7 +48,7 @@ public class DeputadoController {
 			@PathVariable Long id,
 			@RequestParam(required = false) Integer ano,
 			@RequestParam(required = false) String tipo,
-			@PageableDefault(sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
+			@PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
 		return service.listarProposicoes(id, ano, tipo, pageable);
 	}
 }
