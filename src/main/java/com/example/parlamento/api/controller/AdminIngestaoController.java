@@ -4,6 +4,7 @@ import com.example.parlamento.ingestao.service.IngestaoService;
 import com.example.parlamento.ingestao.service.ResultadoIngestao;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Disparo manual e síncrono da ingestão. Sem autenticação no MVP. */
@@ -20,5 +21,10 @@ public class AdminIngestaoController {
 	@PostMapping("/base")
 	public ResultadoIngestao cargaBase() {
 		return ingestaoService.executarCargaBase();
+	}
+
+	@PostMapping("/enriquecimento")
+	public ResultadoIngestao enriquecimento(@RequestParam(defaultValue = "500") int limite) {
+		return ingestaoService.executarEnriquecimento(limite);
 	}
 }

@@ -2,6 +2,7 @@ package com.example.parlamento.domain.repository;
 
 import com.example.parlamento.domain.entity.ProposicaoAutor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
@@ -17,4 +18,12 @@ public interface ProposicaoAutorRepository extends JpaRepository<ProposicaoAutor
 
 	/** Proposições na base em que o deputado figura como autor. */
 	long countByDeputadoId(Long deputadoId);
+
+	/**
+	 * DELETE em massa, executado na hora. Necessário porque o Hibernate faz os INSERTs
+	 * antes dos DELETEs no flush, o que violaria uk_autor_deputado ao regravar autores.
+	 */
+	@Modifying
+	@Query("delete from ProposicaoAutor a where a.proposicao.id = :proposicaoId")
+	int deleteByProposicaoId(Long proposicaoId);
 }
