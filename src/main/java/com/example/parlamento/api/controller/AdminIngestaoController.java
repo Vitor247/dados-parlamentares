@@ -2,6 +2,7 @@ package com.example.parlamento.api.controller;
 
 import com.example.parlamento.ingestao.service.IngestaoService;
 import com.example.parlamento.ingestao.service.ResultadoIngestao;
+import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +25,8 @@ public class AdminIngestaoController {
 	}
 
 	@PostMapping("/enriquecimento")
-	public ResultadoIngestao enriquecimento(@RequestParam(defaultValue = "500") int limite) {
+	public ResultadoIngestao enriquecimento(
+			@RequestParam(defaultValue = "500") @Min(value = 1, message = "deve ser maior que zero") int limite) {
 		return ingestaoService.executarEnriquecimento(limite);
 	}
 }

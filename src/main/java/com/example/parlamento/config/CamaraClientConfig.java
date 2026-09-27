@@ -57,7 +57,7 @@ public class CamaraClientConfig {
 			public void beforeRetry(RetryPolicy retryPolicy, Retryable<?> retryable, RetryState state) {
 				log.warn("Câmara: {} falhou ({}); retentativa {} de {}",
 						retryable.getName(), state.getLastException().getMessage(),
-						state.getRetryCount() + 1, retry.maxRetentativas());
+						state.getRetryCount(), retry.maxRetentativas());
 			}
 		});
 		return template;

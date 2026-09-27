@@ -1,9 +1,6 @@
 package com.example.parlamento.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@ResponseStatus(HttpStatus.NOT_FOUND)
+/** Recurso inexistente na base (respondido como 404). */
 public class RecursoNaoEncontradoException extends RuntimeException {
 
 	public RecursoNaoEncontradoException(String recurso, Object id) {

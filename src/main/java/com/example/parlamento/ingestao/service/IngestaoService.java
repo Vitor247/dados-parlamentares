@@ -2,6 +2,7 @@ package com.example.parlamento.ingestao.service;
 
 import com.example.parlamento.config.IngestaoProperties;
 import com.example.parlamento.domain.repository.ProposicaoRepository;
+import com.example.parlamento.exception.ParametroInvalidoException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -42,7 +43,7 @@ public class IngestaoService {
 	/** Fase B — enriquecimento de até {@code limite} proposições pendentes. */
 	public ResultadoIngestao executarEnriquecimento(int limite) {
 		if (limite < 1) {
-			throw new IllegalArgumentException("limite deve ser maior que zero");
+			throw new ParametroInvalidoException("limite deve ser maior que zero");
 		}
 		LocalDateTime inicio = LocalDateTime.now();
 		return resultado(inicio, List.of(enriquecimento.enriquecer(limite)));
