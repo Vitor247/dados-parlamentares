@@ -26,6 +26,12 @@ public class IngestaoLogService {
 		registrar(recurso, referencia, IngestaoLog.Status.SUCESSO, registros, null, iniciadoEm);
 	}
 
+	/** Gravou o essencial, mas parte do dado não pôde ser obtida ou resolvida. */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void parcial(String recurso, String referencia, int registros, String motivo, LocalDateTime iniciadoEm) {
+		registrar(recurso, referencia, IngestaoLog.Status.PARCIAL, registros, motivo, iniciadoEm);
+	}
+
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void falha(String recurso, String referencia, Throwable erro, LocalDateTime iniciadoEm) {
 		registrar(recurso, referencia, IngestaoLog.Status.FALHA, null, descrever(erro), iniciadoEm);
@@ -41,7 +47,7 @@ public class IngestaoLogService {
 		repository.save(log);
 	}
 
-	private static String descrever(Throwable erro) {
+	static String descrever(Throwable erro) {
 		StringBuilder sb = new StringBuilder(erro.getClass().getSimpleName()).append(": ").append(erro.getMessage());
 		for (Throwable causa = erro.getCause(); causa != null && causa != erro; causa = causa.getCause()) {
 			sb.append(" | causa: ").append(causa.getClass().getSimpleName()).append(": ").append(causa.getMessage());
