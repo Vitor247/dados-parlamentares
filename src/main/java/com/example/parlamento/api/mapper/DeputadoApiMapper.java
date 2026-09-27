@@ -29,7 +29,7 @@ public class DeputadoApiMapper {
 				fonte(deputado));
 	}
 
-	public DeputadoDto paraDto(Deputado deputado) {
+	public DeputadoDto paraDto(Deputado deputado, long totalProposicoes) {
 		return new DeputadoDto(
 				deputado.getId(),
 				deputado.getNome(),
@@ -46,6 +46,7 @@ public class DeputadoApiMapper {
 				deputado.getUfNascimento(),
 				deputado.getMunicipioNascimento(),
 				deputado.getEscolaridade(),
+				totalProposicoes,
 				fonte(deputado));
 	}
 

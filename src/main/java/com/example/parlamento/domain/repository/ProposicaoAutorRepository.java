@@ -14,4 +14,7 @@ public interface ProposicaoAutorRepository extends JpaRepository<ProposicaoAutor
 			select a.proposicao.id from ProposicaoAutor a
 			where a.deputado.id = :deputadoId and a.proposicao.id in :proposicaoIds""")
 	Set<Long> findProposicaoIdsComAutor(Long deputadoId, Collection<Long> proposicaoIds);
+
+	/** Proposições na base em que o deputado figura como autor. */
+	long countByDeputadoId(Long deputadoId);
 }
