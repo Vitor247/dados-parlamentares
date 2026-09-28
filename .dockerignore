@@ -1,0 +1,15 @@
+# Só o necessário para o build vai para o contexto do Docker.
+target/
+.git/
+.gitignore
+.gitattributes
+.idea/
+.vscode/
+*.iml
+.env
+docs/
+README.md
+LICENSE
+docker-compose.yml
+Dockerfile
+.dockerignore

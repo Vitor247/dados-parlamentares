@@ -1,0 +1,7 @@
+# Scripts executados em Linux (inclusive dentro da imagem Docker) precisam de LF:
+# com CRLF o shell falha com "/bin/sh^M: not found".
+mvnw     text eol=lf
+*.sh     text eol=lf
+
+# Scripts do Windows ficam com CRLF.
+*.cmd    text eol=crlf

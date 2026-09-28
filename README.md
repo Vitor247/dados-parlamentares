@@ -33,21 +33,28 @@ API da Câmara → Ingestão → PostgreSQL → API REST própria → Cidadão
 
 ## Como rodar
 
-**Pré-requisitos:** JDK 21 e Docker.
+**Pré-requisito:** Docker.
 
 ```bash
-# 1. Sobe o PostgreSQL (porta 5433 no host)
-docker compose up -d
-
-# 2. Sobe a API (Flyway cria o schema no boot)
-./mvnw spring-boot:run          # Linux/macOS
-mvnw.cmd spring-boot:run        # Windows
+docker compose up -d --build
 ```
+
+Sobe o PostgreSQL e a API (a imagem é compilada na primeira vez, o que leva alguns minutos). A API espera o banco ficar saudável, e o Flyway cria o schema no boot.
 
 A API fica em `http://localhost:8080` e a documentação interativa em **http://localhost:8080/swagger-ui.html**.
 
-> A porta do Postgres no host é **5433** para não colidir com um PostgreSQL instalado localmente na 5432.
-> Para mudar, copie `.env.example` para `.env` e ajuste `POSTGRES_PORT` (e `DB_PORT` ao rodar a API).
+> Portas no host: API na **8080**, PostgreSQL na **5433** (para não colidir com um PostgreSQL instalado localmente na 5432).
+> Para mudar, copie `.env.example` para `.env` e ajuste `API_PORT` / `POSTGRES_PORT`.
+
+### Desenvolvimento (API fora do Docker)
+
+Com JDK 21 instalado, suba só o banco e rode a API pelo Maven Wrapper:
+
+```bash
+docker compose up -d postgres
+./mvnw spring-boot:run          # Linux/macOS
+mvnw.cmd spring-boot:run        # Windows
+```
 
 ### Carregando os dados
 
@@ -67,12 +74,16 @@ Cada unidade processada (um deputado, uma proposição) gera uma linha na tabela
 
 ### Configuração
 
+No `docker compose`, via `.env` (veja `.env.example`):
+
 | Variável | Padrão | |
 |---|---|---|
-| `DB_HOST` / `DB_PORT` / `DB_NAME` | `localhost` / `5433` / `parlamento` | Conexão com o banco |
-| `DB_USER` / `DB_PASSWORD` | `parlamento` / `parlamento` | |
-| `SERVER_PORT` | `8080` | Porta da API |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | `parlamento` | Banco, usuário e senha (repassados à API) |
+| `POSTGRES_PORT` | `5433` | Porta do PostgreSQL no host |
+| `API_PORT` | `8080` | Porta da API no host |
 | `CAMARA_API_URL` | `https://dadosabertos.camara.leg.br/api/v2` | Base da API da Câmara |
+
+Rodando a API fora do Docker, ela lê `DB_HOST` (`localhost`), `DB_PORT` (`5433`), `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `SERVER_PORT` (`8080`) e `CAMARA_API_URL`.
 
 O recorte de dados fica em `application.yml`:
 
@@ -219,6 +230,8 @@ Os DTOs da ingestão e os da API pública são conjuntos separados: se a Câmara
 ```bash
 ./mvnw test
 ```
+
+Os testes rodam fora da imagem Docker (o build da imagem usa `-DskipTests`, porque os testes de integração precisam do próprio Docker).
 
 Requer Docker em execução (Testcontainers sobe um PostgreSQL real). São três camadas:
 

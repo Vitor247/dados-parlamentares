@@ -17,5 +17,24 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build: .
+    image: parlamento-api
+    container_name: parlamento-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Dentro da rede do compose o banco é o serviço "postgres", na porta interna 5432.
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-parlamento}
+      DB_USER: ${POSTGRES_USER:-parlamento}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-parlamento}
+      CAMARA_API_URL: ${CAMARA_API_URL:-https://dadosabertos.camara.leg.br/api/v2}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
 volumes:
   postgres-data:
