@@ -1,6 +1,7 @@
 package com.example.parlamento.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -12,8 +13,8 @@ import java.util.function.Function;
 /** Envelope de resposta paginada da nossa API. */
 public record PaginaDto<T>(
 		List<T> conteudo,
-		int pagina,
-		int tamanho,
+		@Schema(description = "Número da página, começando em 0", example = "0") int pagina,
+		@Schema(description = "Tamanho da página (padrão 20, máximo 100)", example = "20") int tamanho,
 		long totalElementos,
 		int totalPaginas,
 		@JsonProperty("_fonte") Fonte fonte) {

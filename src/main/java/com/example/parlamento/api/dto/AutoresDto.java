@@ -1,6 +1,7 @@
 package com.example.parlamento.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ import java.util.List;
 public record AutoresDto(
 		Long proposicaoId,
 		String identificacao,
+		@Schema(description = "false = autoria completa ainda não carregada: só os deputados da base que constam "
+				+ "como autores, sem coautores externos, ordem de assinatura ou proponente")
 		boolean detalheCarregado,
 		List<AutorDto> autores,
 		@JsonProperty("_fonte") FonteDto fonte) {
@@ -28,6 +31,7 @@ public record AutoresDto(
 			String tipo,
 			Integer ordemAssinatura,
 			Boolean proponente,
+			@Schema(description = "Deputado na base; null quando o autor não é deputado ou não está na base")
 			DeputadoRefDto deputado) {
 	}
 

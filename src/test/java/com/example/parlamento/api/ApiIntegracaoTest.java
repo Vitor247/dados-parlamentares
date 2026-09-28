@@ -282,6 +282,34 @@ class ApiIntegracaoTest extends IntegracaoTest {
 		}
 	}
 
+	@Nested
+	class Documentacao {
+
+		@Test
+		void openApiExplicaOrigemRecorteDetalheCarregadoETotalProposicoes() {
+			var descricao = assertThat(get("/v3/api-docs")).hasStatusOk().bodyJson()
+					.extractingPath("$.info.description").asString();
+
+			descricao.contains("Dados Abertos da Câmara dos Deputados");
+			descricao.contains("Legislatura: **57**", "2025-01-01", "PL, PEC, PLP, PDL");
+			descricao.contains("`detalheCarregado`");
+			descricao.contains("Não é métrica de produtividade parlamentar");
+		}
+
+		@Test
+		void paginacaoApareceComoPageSizeESort() {
+			assertThat(get("/v3/api-docs")).bodyJson()
+					.extractingPath("$.paths['/api/v1/deputados'].get.parameters[*].name").asArray()
+					.contains("uf", "partido", "nome", "page", "size", "sort")
+					.doesNotContain("pageable");
+		}
+
+		@Test
+		void swaggerUiDisponivel() {
+			assertThat(get("/swagger-ui.html")).hasStatus3xxRedirection();
+		}
+	}
+
 	private MvcTestResult get(String uri) {
 		return mvc.get().uri(uri).exchange();
 	}

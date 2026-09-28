@@ -30,6 +30,15 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  default-produces-media-type: application/json
+  # Respostas de erro são documentadas explicitamente em cada endpoint; sem isso o springdoc
+  # anexaria a todos os endpoints todo tipo de erro tratado no @RestControllerAdvice.
+  override-with-generic-response: false
+
 parlamento:
   ingestao:
     legislatura: 57

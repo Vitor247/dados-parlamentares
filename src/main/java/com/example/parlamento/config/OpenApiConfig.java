@@ -1,0 +1,70 @@
+package com.example.parlamento.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.tags.Tag;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+/** Metadados da documentação OpenAPI (Swagger UI em {@code /swagger-ui.html}). */
+@Configuration
+public class OpenApiConfig {
+
+	@Bean
+	OpenAPI openApi(IngestaoProperties recorte) {
+		return new OpenAPI()
+				.info(new Info()
+						.title("Plataforma de Dados Parlamentares")
+						.version("v1")
+						.description(descricao(recorte))
+						.license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))
+				.tags(List.of(
+						new Tag().name("Deputados").description("Deputados federais, com partido atual e proposições de autoria"),
+						new Tag().name("Partidos").description("Partidos com representação na legislatura importada"),
+						new Tag().name("Proposições").description("Proposições legislativas, situação atual e autoria"),
+						new Tag().name("Administração").description("Disparo manual da ingestão (sem autenticação no MVP)")));
+	}
+
+	/** O recorte vem da configuração: a documentação acompanha o que de fato foi importado. */
+	private static String descricao(IngestaoProperties recorte) {
+		return """
+				API pública e somente leitura sobre deputados federais, partidos e proposições.
+
+				## Origem dos dados
+				Todos os dados vêm da **API de Dados Abertos da Câmara dos Deputados**
+				(https://dadosabertos.camara.leg.br), são importados para uma base própria e servidos aqui.
+				Nenhum dado é inventado, inferido ou completado. Todo recurso traz um bloco `_fonte` com a
+				origem, a URI oficial na Câmara e o momento da última atualização na nossa base.
+
+				Esta API **não é ferramenta de avaliação política**: não há ranking, nota ou classificação.
+
+				## Recorte de dados vigente
+				- Legislatura: **%d**
+				- Proposições apresentadas a partir de **%s**
+				- Tipos de proposição: **%s**
+
+				Proposições fora desse recorte não estão na base, mesmo que existam na Câmara.
+
+				## `detalheCarregado`
+				A importação de proposições acontece em duas fases. Na primeira, só a identificação e a
+				ementa são carregadas (`detalheCarregado = false`): situação, data de apresentação, inteiro
+				teor e autoria completa (coautores, autores que não são deputados, ordem de assinatura)
+				ainda **não foram carregados** e aparecem como `null`. Depois do enriquecimento,
+				`detalheCarregado = true`.
+
+				## `totalProposicoes`
+				Contagem simples das proposições de autoria do deputado **que estão na nossa base**,
+				dentro do recorte acima. **Não é métrica de produtividade parlamentar** e não deve ser usada
+				para comparar deputados.
+
+				## Convenções
+				- Paginação: `page` começa em **0**; `size` padrão 20, máximo 100.
+				- Campos que a fonte não publica vêm como `null` — nunca são omitidos nem preenchidos com zero.
+				- Erros seguem o formato `StandardError` (`timestamp`, `status`, `erro`, `mensagem`, `caminho`).
+				""".formatted(recorte.legislatura(), recorte.dataApresentacaoInicio(),
+				String.join(", ", recorte.tiposProposicao()));
+	}
+}
