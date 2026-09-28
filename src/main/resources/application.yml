@@ -3,7 +3,9 @@ spring:
     name: parlamento
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:parlamento}
+    # DB_URL completa tem prioridade (bancos gerenciados já a fornecem, com ?sslmode=require);
+    # sem ela, a URL é montada a partir de host/porta/nome.
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:parlamento}}
     username: ${DB_USER:parlamento}
     password: ${DB_PASSWORD:parlamento}
 
@@ -28,7 +30,14 @@ spring:
         max-page-size: 100
 
 server:
-  port: ${SERVER_PORT:8080}
+  # PORT é a variável que as plataformas de hospedagem usam para ditar a porta.
+  port: ${PORT:${SERVER_PORT:8080}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health   # só o health check; nada de métricas ou configuração expostas
 
 springdoc:
   swagger-ui:
@@ -40,6 +49,12 @@ springdoc:
   override-with-generic-response: false
 
 parlamento:
+  seguranca:
+    # Sem chave configurada, os endpoints /admin ficam bloqueados (403).
+    admin-api-key: ${ADMIN_API_KEY:}
+    # Origens do frontend, separadas por vírgula. Padrão: servidor de dev do Vite.
+    cors-origens: ${CORS_ORIGINS:http://localhost:5173}
+
   ingestao:
     legislatura: 57
     data-apresentacao-inicio: 2025-01-01

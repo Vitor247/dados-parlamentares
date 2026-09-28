@@ -1,5 +1,6 @@
 package com.example.parlamento.api.controller;
 
+import com.example.parlamento.config.OpenApiConfig;
 import com.example.parlamento.exception.StandardError;
 import com.example.parlamento.ingestao.service.IngestaoService;
 import com.example.parlamento.ingestao.service.ResultadoIngestao;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +17,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Disparo manual e síncrono da ingestão. Sem autenticação no MVP. */
+/** Disparo manual e síncrono da ingestão. Protegido por chave (ver AdminApiKeyInterceptor). */
 @Tag(name = "Administração")
+@SecurityRequirement(name = OpenApiConfig.ESQUEMA_ADMIN)
 @RestController
 @RequestMapping("/api/v1/admin/ingestao")
+@ApiResponse(responseCode = "401", description = "Header X-Admin-Key ausente ou inválido",
+		content = @Content(schema = @Schema(implementation = StandardError.class)))
+@ApiResponse(responseCode = "403", description = "Administração desabilitada: servidor sem ADMIN_API_KEY",
+		content = @Content(schema = @Schema(implementation = StandardError.class)))
 public class AdminIngestaoController {
 
 	private final IngestaoService ingestaoService;

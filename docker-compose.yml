@@ -33,6 +33,9 @@ services:
       DB_USER: ${POSTGRES_USER:-parlamento}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-parlamento}
       CAMARA_API_URL: ${CAMARA_API_URL:-https://dadosabertos.camara.leg.br/api/v2}
+      # Sem ADMIN_API_KEY no .env, os endpoints /admin ficam bloqueados.
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     ports:
       - "${API_PORT:-8080}:8080"
 

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
@@ -26,7 +27,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * </pre>
  */
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+		"parlamento.seguranca.admin-api-key=" + ApiIntegracaoTest.CHAVE_ADMIN,
+		"parlamento.seguranca.cors-origens=https://front.exemplo.org"})
 class ApiIntegracaoTest extends IntegracaoTest {
+
+	static final String CHAVE_ADMIN = "chave-de-teste";
 
 	@Autowired
 	private MockMvcTester mvc;
@@ -268,7 +274,7 @@ class ApiIntegracaoTest extends IntegracaoTest {
 
 		@Test
 		void limiteInvalidoNoEnriquecimentoE400() {
-			assertThat(mvc.post().uri("/api/v1/admin/ingestao/enriquecimento?limite=0"))
+			assertThat(mvc.post().uri("/api/v1/admin/ingestao/enriquecimento?limite=0").header("X-Admin-Key", CHAVE_ADMIN))
 					.hasStatus(HttpStatus.BAD_REQUEST)
 					.bodyJson().extractingPath("$.mensagem").isEqualTo("limite: deve ser maior que zero");
 		}
@@ -279,6 +285,62 @@ class ApiIntegracaoTest extends IntegracaoTest {
 					.bodyJson().extractingPath("$.erro").isEqualTo("Não encontrado");
 			assertThat(mvc.delete().uri("/api/v1/deputados")).hasStatus(HttpStatus.METHOD_NOT_ALLOWED)
 					.bodyJson().extractingPath("$.erro").isEqualTo("Método não permitido");
+		}
+	}
+
+	@Nested
+	class ExposicaoPublica {
+
+		private static final String ENRIQUECIMENTO = "/api/v1/admin/ingestao/enriquecimento?limite=0";
+
+		@Test
+		void adminSemChaveE401() {
+			assertThat(mvc.post().uri(ENRIQUECIMENTO)).hasStatus(HttpStatus.UNAUTHORIZED)
+					.bodyJson().extractingPath("$.erro").isEqualTo("Não autorizado");
+		}
+
+		@Test
+		void adminComChaveErradaE401() {
+			assertThat(mvc.post().uri(ENRIQUECIMENTO).header("X-Admin-Key", "chave-errada"))
+					.hasStatus(HttpStatus.UNAUTHORIZED);
+		}
+
+		@Test
+		void endpointsPublicosNaoExigemChave() {
+			assertThat(get("/api/v1/deputados")).hasStatusOk();
+		}
+
+		@Test
+		void corsLiberaLeituraParaOFrontendConfigurado() {
+			assertThat(mvc.options().uri("/api/v1/deputados")
+					.header("Origin", "https://front.exemplo.org")
+					.header("Access-Control-Request-Method", "GET"))
+					.hasStatusOk()
+					.hasHeader("Access-Control-Allow-Origin", "https://front.exemplo.org");
+		}
+
+		@Test
+		void corsRecusaOutrasOrigensEEscritaPeloNavegador() {
+			assertThat(mvc.options().uri("/api/v1/deputados")
+					.header("Origin", "https://site-qualquer.com")
+					.header("Access-Control-Request-Method", "GET"))
+					.hasStatus(HttpStatus.FORBIDDEN);
+			assertThat(mvc.options().uri("/api/v1/admin/ingestao/base")
+					.header("Origin", "https://front.exemplo.org")
+					.header("Access-Control-Request-Method", "POST"))
+					.hasStatus(HttpStatus.FORBIDDEN);
+		}
+
+		@Test
+		void healthCheckRespondeUpComOBanco() {
+			assertThat(get("/actuator/health")).hasStatusOk()
+					.bodyJson().extractingPath("$.status").isEqualTo("UP");
+		}
+
+		@Test
+		void actuatorNaoExpoeOutrosEndpoints() {
+			assertThat(get("/actuator/env")).hasStatus(HttpStatus.NOT_FOUND);
+			assertThat(get("/actuator/beans")).hasStatus(HttpStatus.NOT_FOUND);
 		}
 	}
 

@@ -40,6 +40,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return responder(HttpStatus.NOT_FOUND, e.getMessage(), request.getRequestURI());
 	}
 
+	@ExceptionHandler(AcessoNegadoException.class)
+	ResponseEntity<StandardError> acessoNegado(AcessoNegadoException e, HttpServletRequest request) {
+		log.warn("Acesso negado a {}: {}", request.getRequestURI(), e.getMessage());
+		return responder(e.getStatus(), e.getMessage(), request.getRequestURI());
+	}
+
 	@ExceptionHandler(ParametroInvalidoException.class)
 	ResponseEntity<StandardError> parametroInvalido(ParametroInvalidoException e, HttpServletRequest request) {
 		return responder(HttpStatus.BAD_REQUEST, e.getMessage(), request.getRequestURI());
@@ -110,6 +116,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	private static String descricao(HttpStatusCode status) {
 		return switch (status.value()) {
 			case 400 -> "Requisição inválida";
+			case 401 -> "Não autorizado";
+			case 403 -> "Proibido";
 			case 404 -> "Não encontrado";
 			case 405 -> "Método não permitido";
 			case 502 -> "Fonte externa indisponível";

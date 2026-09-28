@@ -1,6 +1,8 @@
 package com.example.parlamento.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -13,9 +15,17 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
+	/** Nome do esquema de segurança referenciado pelos endpoints de administração. */
+	public static final String ESQUEMA_ADMIN = "chaveAdmin";
+
 	@Bean
 	OpenAPI openApi(IngestaoProperties recorte) {
 		return new OpenAPI()
+				.components(new Components().addSecuritySchemes(ESQUEMA_ADMIN, new SecurityScheme()
+						.type(SecurityScheme.Type.APIKEY)
+						.in(SecurityScheme.In.HEADER)
+						.name(AdminApiKeyInterceptor.HEADER)
+						.description("Chave de administração (variável ADMIN_API_KEY do servidor)")))
 				.info(new Info()
 						.title("Plataforma de Dados Parlamentares")
 						.version("v1")
@@ -25,7 +35,8 @@ public class OpenApiConfig {
 						new Tag().name("Deputados").description("Deputados federais, com partido atual e proposições de autoria"),
 						new Tag().name("Partidos").description("Partidos com representação na legislatura importada"),
 						new Tag().name("Proposições").description("Proposições legislativas, situação atual e autoria"),
-						new Tag().name("Administração").description("Disparo manual da ingestão (sem autenticação no MVP)")));
+						new Tag().name("Administração").description("Disparo manual da ingestão. Exige o header "
+								+ AdminApiKeyInterceptor.HEADER + " (botão Authorize)")));
 	}
 
 	/** O recorte vem da configuração: a documentação acompanha o que de fato foi importado. */

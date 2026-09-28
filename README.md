@@ -58,15 +58,17 @@ mvnw.cmd spring-boot:run        # Windows
 
 ### Carregando os dados
 
-A base começa vazia. A ingestão é disparada manualmente e roda em duas fases:
+A base começa vazia. A ingestão é disparada pelos endpoints `/admin`, que exigem a chave de administração no header `X-Admin-Key`. Defina a chave em `ADMIN_API_KEY` (no `.env`, para o Docker) — **sem chave configurada, a administração fica bloqueada** (403).
 
 ```bash
 # Fase A — carga base: partidos → deputados → proposições por autoria (~3–4 min)
-curl -X POST http://localhost:8080/api/v1/admin/ingestao/base
+curl -X POST -H "X-Admin-Key: $ADMIN_API_KEY" http://localhost:8080/api/v1/admin/ingestao/base
 
 # Fase B — enriquecimento: situação, data, inteiro teor e autoria completa, em lotes
-curl -X POST "http://localhost:8080/api/v1/admin/ingestao/enriquecimento?limite=500"
+curl -X POST -H "X-Admin-Key: $ADMIN_API_KEY" "http://localhost:8080/api/v1/admin/ingestao/enriquecimento?limite=500"
 ```
+
+No Swagger, use o botão **Authorize** para informar a chave.
 
 Ao fim da Fase A a API já responde tudo o que promete. A Fase B melhora as proposições aos poucos: cada lote de 500 leva ~2 min, e a resposta informa quantas ainda estão pendentes (`proposicoesPendentes`). Ela é **retomável** — o que falhar continua pendente para o próximo lote — e as duas fases são **idempotentes**: podem ser executadas de novo sem duplicar dados.
 
@@ -82,8 +84,12 @@ No `docker compose`, via `.env` (veja `.env.example`):
 | `POSTGRES_PORT` | `5433` | Porta do PostgreSQL no host |
 | `API_PORT` | `8080` | Porta da API no host |
 | `CAMARA_API_URL` | `https://dadosabertos.camara.leg.br/api/v2` | Base da API da Câmara |
+| `ADMIN_API_KEY` | *(vazia = admin bloqueado)* | Chave do header `X-Admin-Key`. Gere com `openssl rand -hex 32` |
+| `CORS_ORIGINS` | `http://localhost:5173` | Origens do frontend autorizadas, separadas por vírgula |
 
-Rodando a API fora do Docker, ela lê `DB_HOST` (`localhost`), `DB_PORT` (`5433`), `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `SERVER_PORT` (`8080`) e `CAMARA_API_URL`.
+Rodando a API fora do Docker, ela lê `DB_HOST` (`localhost`), `DB_PORT` (`5433`), `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `SERVER_PORT` (`8080`), `CAMARA_API_URL`, `ADMIN_API_KEY` e `CORS_ORIGINS`.
+
+Em hospedagem, duas variáveis têm prioridade: **`DB_URL`** (URL JDBC completa, como a fornecida por bancos gerenciados, ex.: `jdbc:postgresql://host/db?sslmode=require`) sobre host/porta/nome, e **`PORT`** (definida pela plataforma) sobre `SERVER_PORT`. O health check fica em `/actuator/health`.
 
 O recorte de dados fica em `application.yml`:
 
@@ -112,8 +118,8 @@ Prefixo `/api/v1`. Nomenclatura em português: *proposição* e *ementa* não t�
 | GET | `/proposicoes?ano=&tipo=&numero=&ementa=` | Busca proposições |
 | GET | `/proposicoes/{id}` | Detalhe, com a situação atual |
 | GET | `/proposicoes/{id}/autores` | Autoria, na ordem de assinatura |
-| POST | `/admin/ingestao/base` | Fase A da ingestão |
-| POST | `/admin/ingestao/enriquecimento?limite=` | Fase B da ingestão |
+| POST | `/admin/ingestao/base` | Fase A da ingestão (header `X-Admin-Key`) |
+| POST | `/admin/ingestao/enriquecimento?limite=` | Fase B da ingestão (header `X-Admin-Key`) |
 
 - **Paginação:** `page` começa em 0; `size` padrão 20, máximo 100; `sort=campo,asc|desc`.
 - **Filtros de texto** (`nome`, `ementa`) não diferenciam maiúsculas e tratam `%` e `_` como texto literal.
@@ -176,6 +182,8 @@ Erros seguem um formato único:
 |---|---|
 | Recurso não encontrado | 404 |
 | Parâmetro inválido, tipo errado, ordenação por campo inexistente | 400 |
+| Endpoint `/admin` sem a chave correta | 401 |
+| Endpoint `/admin` com o servidor sem `ADMIN_API_KEY` | 403 |
 | Método não suportado | 405 |
 | API da Câmara indisponível durante a ingestão | 502 |
 | Erro interno (sem stack trace na resposta) | 500 |
