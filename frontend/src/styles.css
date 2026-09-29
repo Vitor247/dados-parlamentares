@@ -363,3 +363,225 @@ a.numero:hover {
 .numero span {
   color: var(--texto-suave);
 }
+
+/* ---------- filtros e formulários ---------- */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--texto-suave);
+  min-width: 120px;
+}
+
+.campo-largo {
+  flex: 1 1 240px;
+}
+
+.campo input,
+.campo select {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  padding: 8px 10px;
+  min-height: 40px;
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-color: var(--destaque);
+}
+
+/* Recarregando com dados antigos na tela: esmaece em vez de sumir. */
+.atualizando {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+/* ---------- deputados ---------- */
+
+.grade-deputados {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cartao-deputado {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  height: 100%;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.cartao-deputado:hover {
+  color: var(--texto);
+  border-color: var(--destaque);
+}
+
+.cartao-deputado > span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.foto {
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  background: var(--superficie-2);
+  flex-shrink: 0;
+}
+
+.foto-iniciais {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+.migalha {
+  margin-bottom: 16px;
+}
+
+.cabecalho-perfil {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.cabecalho-perfil h1 {
+  margin-bottom: 4px;
+}
+
+.cabecalho-perfil p {
+  margin-bottom: 8px;
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px 24px;
+  margin: 0 0 16px;
+}
+
+.dados dt {
+  font-size: 0.8125rem;
+  color: var(--texto-suave);
+}
+
+.dados dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.fonte-dados {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+
+/* ---------- proposições ---------- */
+
+.secao {
+  margin-top: 36px;
+}
+
+.secao-cabecalho p {
+  max-width: 720px;
+}
+
+.lista-proposicoes {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.item-proposicao {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.item-proposicao:last-child {
+  border-bottom: none;
+}
+
+.item-proposicao-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.item-proposicao-link:hover .item-proposicao-titulo {
+  text-decoration: underline;
+}
+
+.item-proposicao-titulo {
+  font-weight: 650;
+  color: var(--destaque);
+}
+
+.item-proposicao-ementa {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-proposicao-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ---------- paginação ---------- */
+
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paginacao-botoes {
+  display: flex;
+  gap: 8px;
+}
