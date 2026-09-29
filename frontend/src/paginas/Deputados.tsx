@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { Link } from 'react-router'
 import type { DeputadoResumo, Pagina, PartidoResumo } from '../api/tipos'
 import { useApi } from '../api/useApi'
+import { CampoBusca } from '../componentes/CampoBusca'
 import { Carregando, MensagemErro, Vazio } from '../componentes/Estados'
 import { FotoDeputado } from '../componentes/FotoDeputado'
 import { Paginacao } from '../componentes/Paginacao'
@@ -29,7 +30,7 @@ export function Deputados() {
       <p className="texto-suave">Deputados federais da legislatura 57, com o partido atual segundo a Câmara.</p>
 
       <form className="filtros" role="search" onSubmit={(e) => e.preventDefault()}>
-        <CampoNome valor={filtros.nome} aoMudar={alterarNome} />
+        <CampoBusca rotulo="Nome" valor={filtros.nome} placeholder="Ex.: Silva" aoMudar={alterarNome} />
         <label className="campo">
           <span>UF</span>
           <select value={filtros.uf} onChange={(e) => alterarFiltro('uf', e.target.value)}>
@@ -90,31 +91,5 @@ export function Deputados() {
         </div>
       )}
     </>
-  )
-}
-
-/** Busca enquanto digita, mas só depois de uma pausa: não dispara uma requisição por tecla. */
-function CampoNome({ valor, aoMudar }: { valor: string; aoMudar: (v: string) => void }) {
-  const [texto, setTexto] = useState(valor)
-  const [valorAnterior, setValorAnterior] = useState(valor)
-
-  // A URL pode mudar por fora (voltar do navegador, "Limpar filtros"): ajusta o texto durante o
-  // render, sem efeito extra. Se a mudança veio da própria digitação, o texto já está certo.
-  if (valor !== valorAnterior) {
-    setValorAnterior(valor)
-    if (valor !== texto.trim()) setTexto(valor)
-  }
-
-  useEffect(() => {
-    if (texto.trim() === valor) return
-    const timer = setTimeout(() => aoMudar(texto.trim()), 350)
-    return () => clearTimeout(timer)
-  }, [texto, valor, aoMudar])
-
-  return (
-    <label className="campo campo-largo">
-      <span>Nome</span>
-      <input type="search" value={texto} placeholder="Ex.: Silva" onChange={(e) => setTexto(e.target.value)} />
-    </label>
   )
 }

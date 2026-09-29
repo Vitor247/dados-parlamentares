@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router'
 import { ErroDaApi } from '../api/cliente'
 import type { Deputado as DeputadoDto, Pagina, ProposicaoResumo } from '../api/tipos'
 import { useApi } from '../api/useApi'
+import { Dado } from '../componentes/Dado'
 import { Carregando, MensagemErro, Vazio } from '../componentes/Estados'
 import { FonteDados } from '../componentes/FonteDados'
 import { FotoDeputado } from '../componentes/FotoDeputado'
@@ -66,16 +67,6 @@ export function Deputado() {
 
       <ProposicoesDoDeputado id={d.id} total={d.totalProposicoes} />
     </>
-  )
-}
-
-/** Campo sem dado na fonte aparece como tal — nunca some nem vira zero. */
-function Dado({ rotulo, valor }: { rotulo: string; valor: string | null }) {
-  return (
-    <div>
-      <dt>{rotulo}</dt>
-      <dd>{valor ?? <span className="texto-suave">não informado pela fonte</span>}</dd>
-    </div>
   )
 }
 

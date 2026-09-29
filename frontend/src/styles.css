@@ -571,6 +571,67 @@ a.numero:hover {
   margin-top: 8px;
 }
 
+.cabecalho-proposicao {
+  margin-bottom: 24px;
+}
+
+.cabecalho-proposicao > p:first-child {
+  margin-bottom: 4px;
+}
+
+.ementa {
+  font-size: 1.1rem;
+  max-width: 760px;
+}
+
+.cabecalho-proposicao + .aviso,
+.cabecalho-proposicao + .cartao {
+  margin-bottom: 8px;
+}
+
+.situacao {
+  margin-bottom: 16px;
+}
+
+.etiqueta-destaque {
+  background: var(--destaque-suave);
+  color: var(--destaque);
+  font-size: 0.9375rem;
+  padding: 3px 12px;
+}
+
+.lista-autores {
+  padding: 0;
+  margin: 0 0 24px;
+  list-style: none;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+}
+
+.item-autor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.item-autor:last-child {
+  border-bottom: none;
+}
+
+.item-autor > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.ordem-assinatura {
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
 /* ---------- paginação ---------- */
 
 .paginacao {
