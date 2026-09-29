@@ -241,6 +241,72 @@ A API da Câmara tem armadilhas que só aparecem com dados reais. As principais:
 
 O CPF publicado no detalhe do deputado **não é armazenado**: é dado pessoal sem função no produto.
 
+## Frontend
+
+Um site simples em [`frontend/`](frontend) para consultar a API: busca de deputados (nome, UF, partido), perfil com as proposições de autoria, busca de proposições (tipo, número, ano, palavra na ementa) e detalhe com situação e autoria. Segue os mesmos princípios da API — mostra a procedência de cada dado, diz quando algo não foi informado pela fonte e não classifica nem compara parlamentares.
+
+React 19 + TypeScript, Vite e React Router, sem biblioteca de componentes. Os filtros ficam na URL, então toda busca é um link compartilhável.
+
+```bash
+cd frontend
+cp .env.example .env    # VITE_API_URL=http://localhost:8080
+npm install
+npm run dev             # http://localhost:5173
+```
+
+A API já libera `http://localhost:5173` no CORS por padrão.
+
+## Deploy
+
+Tudo roda no plano gratuito:
+
+```text
+Vercel (frontend)  →  Render (API, Docker)  →  Neon (PostgreSQL)
+                            ↑
+           GitHub Actions (ingestão diária, 03:00)
+```
+
+| Serviço | Limites que importam aqui |
+|---|---|
+| **Neon** | 0,5 GB (a base ocupa ~100 MB); suspende após 5 min ocioso e volta em ~1 s |
+| **Render** | 512 MB de RAM e 0,1 CPU; **dorme após 15 min sem tráfego**; requisições de até 100 min. (O Postgres gratuito do Render expira em 30 dias — por isso o banco fica no Neon.) |
+| **Vercel** | Site estático, sem limitação relevante |
+
+**O que esperar:** depois de dormir, a primeira visita espera o Render religar a instância (~1 min) e a aplicação subir (~50 s) — cerca de 1 min 45 s; o frontend avisa na tela. A imagem já vem ajustada para isso: JVM para pouca memória/CPU e CDS (Class Data Sharing) gravado no build. Medido com `docker run --memory=512m --cpus=0.1`: partida de 159 s → 47 s, memória de 310 → 214 MB.
+
+### Passo a passo
+
+A ordem importa: a API precisa do banco, o frontend precisa da API, e a API precisa da URL do frontend (CORS).
+
+**1. Banco (Neon).** Crie um projeto na região **AWS US East (N. Virginia)** — a mesma do Render. Em *Connect*, desligue *Connection pooling* (o Flyway precisa da conexão direta). A string `postgresql://USUARIO:SENHA@HOST/neondb?sslmode=require` vira três variáveis:
+
+| Variável | Valor |
+|---|---|
+| `DB_URL` | `jdbc:postgresql://HOST/neondb?sslmode=require` (com `jdbc:`, **sem** `USUARIO:SENHA@` e sem `channel_binding`) |
+| `DB_USER` | `USUARIO` |
+| `DB_PASSWORD` | `SENHA` |
+
+As tabelas são criadas pelo Flyway na primeira subida da API.
+
+**2. API (Render).** *New → Blueprint* e escolha este repositório — o [`render.yaml`](render.yaml) define o serviço. Preencha `DB_URL`, `DB_USER`, `DB_PASSWORD` e, por enquanto, `CORS_ORIGINS=http://localhost:5173`; a `ADMIN_API_KEY` é gerada pelo Render. O primeiro build leva ~10 min. Confira `https://SUA-API.onrender.com/actuator/health` e copie o valor de `ADMIN_API_KEY` em *Environment*.
+
+**3. Frontend (Vercel).** *Add New → Project*, importe o repositório com **Root Directory** `frontend` (o preset Vite é detectado) e a variável `VITE_API_URL` = URL da API, sem barra final. O [`frontend/vercel.json`](frontend/vercel.json) faz os links diretos (ex.: `/deputados/204379`) não darem 404. Se mudar a URL da API depois, refaça o deploy: a variável é embutida no build.
+
+**4. CORS (Render de novo).** Troque `CORS_ORIGINS` pela URL de produção da Vercel — para manter o desenvolvimento local, separe por vírgula: `https://seu-site.vercel.app,http://localhost:5173`. URLs de *preview* da Vercel não ficam liberadas.
+
+**5. GitHub Actions.** Em *Settings → Secrets and variables → Actions*: variável `API_URL` (URL da API) e secret `ADMIN_API_KEY` (o valor do passo 2).
+
+**6. Primeira carga.** Em *Actions → Ingestão agendada → Run workflow*, com a carga base marcada e **130** lotes (~1 h 15 min). Assim que a carga base termina (~5 min) o site já mostra deputados e proposições; situação e autoria completa vão aparecendo durante o enriquecimento. Se o job passar do limite de 2 h, nada se perde: uma nova execução (sem a carga base) continua de onde parou.
+
+### Problemas comuns
+
+| Sintoma | Causa provável |
+|---|---|
+| Site mostra "Não foi possível conectar à API" | `CORS_ORIGINS` sem a URL exata da Vercel (atenção a `https` e barra final) ou `VITE_API_URL` errada |
+| Deploy no Render falha ao conectar no banco | `DB_URL` sem `jdbc:`, com usuário/senha embutidos ou com o host do *pooler* |
+| Workflow falha com 401 | `ADMIN_API_KEY` do GitHub diferente da do Render |
+| Workflow aparece como *skipped* | `API_URL` não criada em *Variables* (ou criada em *Secrets*) |
+
 ## Estrutura
 
 ```text
@@ -280,7 +346,7 @@ Requer Docker em execução (Testcontainers sobe um PostgreSQL real). São três
 
 ## Fora do escopo
 
-Votações, órgãos e comissões, histórico de tramitação, despesas, Senado Federal, estatísticas calculadas, autenticação e frontend. Votações são a evolução natural: o modelo já tem deputado e proposição.
+Votações, órgãos e comissões, histórico de tramitação, despesas, Senado Federal, estatísticas calculadas e autenticação de usuários. Votações são a evolução natural: o modelo já tem deputado e proposição.
 
 ## Licença
 

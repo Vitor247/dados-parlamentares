@@ -1,0 +1,31 @@
+# Blueprint do Render: a API como web service Docker no plano gratuito.
+# Passo a passo completo na seção "Deploy" do README.
+services:
+  - type: web
+    name: parlamento-api
+    runtime: docker
+    plan: free
+    # Mesma região do banco (Neon aws-us-east-1): API e banco conversam a cada requisição.
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
+    envVars:
+      # Banco gerenciado (Neon). URL JDBC com ?sslmode=require; usuário e senha separados.
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Chave dos endpoints /admin, gerada aleatoriamente pelo Render.
+      # Copie o valor para o secret ADMIN_API_KEY do repositório no GitHub.
+      - key: ADMIN_API_KEY
+        generateValue: true
+      # URL do frontend na Vercel (ex.: https://dados-parlamentares.vercel.app).
+      - key: CORS_ORIGINS
+        sync: false
+      # Banco gratuito: poucas conexões bastam e economizam memória.
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+        value: "5"

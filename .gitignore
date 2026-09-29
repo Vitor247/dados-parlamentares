@@ -17,3 +17,7 @@ Thumbs.db
 # Ambiente
 .env
 *.log
+
+# Local: documentos de trabalho e configuração de ferramentas
+docs/
+.claude/

@@ -16,8 +16,8 @@ export function Carregando({ texto = 'Carregando…' }: { texto?: string }) {
       {texto}
       {demorando && (
         <p className="pequeno" style={{ marginTop: 12 }}>
-          A API pode estar “acordando” — em hospedagem gratuita ela desliga quando ociosa. Isso pode levar até
-          um minuto na primeira consulta.
+          A API pode estar “acordando” — em hospedagem gratuita ela desliga quando fica ociosa, e a primeira
+          consulta depois disso leva de um a dois minutos. As seguintes são rápidas.
         </p>
       )}
     </div>
