@@ -44,6 +44,7 @@ public final class ProposicaoMapper {
 		proposicao.setTramitacaoDescricao(status == null ? null : status.descricaoTramitacao());
 
 		proposicao.setDetalheCarregado(true);
+		proposicao.setDetalheAtualizadoEm(agora);
 		proposicao.setAtualizadoEm(agora);
 	}
 }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.List;
 
 /** Metadados da documentação OpenAPI (Swagger UI em {@code /swagger-ui.html}). */
@@ -66,6 +67,13 @@ public class OpenApiConfig {
 				ainda **não foram carregados** e aparecem como `null`. Depois do enriquecimento,
 				`detalheCarregado = true`.
 
+				## Atualidade da situação
+				A situação de uma proposição muda na Câmara ao longo da tramitação. Aqui ela é uma
+				**fotografia**: o campo `situacao.atualizadaEm` (ou `situacaoAtualizadaEm` nas listagens)
+				diz quando ela foi consultada na fonte, e ela é revalidada periodicamente (a cada %s).
+				Não confunda com `_fonte.atualizadoEm`, que indica a última sincronização da identificação
+				e da ementa.
+
 				## `totalProposicoes`
 				Contagem simples das proposições de autoria do deputado **que estão na nossa base**,
 				dentro do recorte acima. **Não é métrica de produtividade parlamentar** e não deve ser usada
@@ -76,6 +84,11 @@ public class OpenApiConfig {
 				- Campos que a fonte não publica vêm como `null` — nunca são omitidos nem preenchidos com zero.
 				- Erros seguem o formato `StandardError` (`timestamp`, `status`, `erro`, `mensagem`, `caminho`).
 				""".formatted(recorte.legislatura(), recorte.dataApresentacaoInicio(),
-				String.join(", ", recorte.tiposProposicao()));
+				String.join(", ", recorte.tiposProposicao()), descreverDuracao(recorte.validadeSituacao()));
+	}
+
+	private static String descreverDuracao(Duration duracao) {
+		long dias = duracao.toDays();
+		return dias >= 1 ? dias + (dias == 1 ? " dia" : " dias") : duracao.toHours() + " horas";
 	}
 }

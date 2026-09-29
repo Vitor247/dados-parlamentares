@@ -23,6 +23,7 @@ class ProposicaoMapperTest {
 		assertThat(proposicao.getNumero()).isEqualTo(16);
 		assertThat(proposicao.getAno()).isEqualTo(2025);
 		assertThat(proposicao.isDetalheCarregado()).isFalse();
+		assertThat(proposicao.getDetalheAtualizadoEm()).isNull();
 		assertThat(proposicao.getAtualizadoEm()).isEqualTo(AGORA);
 	}
 
@@ -36,6 +37,9 @@ class ProposicaoMapperTest {
 		assertThat(proposicao.isDetalheCarregado()).isTrue();
 		assertThat(proposicao.getSituacaoDescricao()).isEqualTo("Arquivada");
 		assertThat(proposicao.getDataApresentacao()).isEqualTo(LocalDateTime.of(2025, 4, 9, 18, 16));
+		// A Fase A renova atualizadoEm, mas não pode fazer a situação parecer mais nova do que é.
+		assertThat(proposicao.getAtualizadoEm()).isEqualTo(AGORA.plusDays(1));
+		assertThat(proposicao.getDetalheAtualizadoEm()).isEqualTo(AGORA);
 	}
 
 	@Test
@@ -45,6 +49,7 @@ class ProposicaoMapperTest {
 		ProposicaoMapper.atualizarDoDetalhe(proposicao, detalhe(status()), AGORA);
 
 		assertThat(proposicao.isDetalheCarregado()).isTrue();
+		assertThat(proposicao.getDetalheAtualizadoEm()).isEqualTo(AGORA);
 		assertThat(proposicao.getDescricaoTipo()).isEqualTo("Projeto de Lei");
 		assertThat(proposicao.getUrlInteiroTeor()).isEqualTo("https://www.camara.leg.br/teor");
 		assertThat(proposicao.getSituacaoDescricao()).isEqualTo("Arquivada");

@@ -58,8 +58,13 @@ final class CamaraFake {
 	}
 
 	void detalheProposicao(long id) {
+		detalheProposicao(id, "Aguardando Parecer");
+	}
+
+	/** Detalhe com uma situação específica — para simular a proposição andando na Câmara. */
+	void detalheProposicao(long id, String situacao) {
 		wm.stubFor(get(urlPathEqualTo(BASE + "/proposicoes/" + id))
-				.willReturn(okJson(envelope(detalheProposicaoJson(id), false))));
+				.willReturn(okJson(envelope(detalheProposicaoJson(id, situacao), false))));
 	}
 
 	void autores(long idProposicao, String... autores) {
@@ -116,14 +121,14 @@ final class CamaraFake {
 				.formatted(id, URI, id, id, id, siglaPartidoAtual);
 	}
 
-	private static String detalheProposicaoJson(long id) {
+	private static String detalheProposicaoJson(long id, String situacao) {
 		return """
 				{"id":%d,"uri":"%s/proposicoes/%d","siglaTipo":"PL","codTipo":139,"numero":%d,"ano":2025,
 				 "ementa":"Ementa detalhada","dataApresentacao":"2025-04-09T18:16","descricaoTipo":"Projeto de Lei",
 				 "urlInteiroTeor":"https://www.camara.leg.br/teor/%d",
 				 "statusProposicao":{"dataHora":"2025-04-27T00:00","siglaOrgao":"CCJC","descricaoTramitacao":"Recebimento",
-				   "descricaoSituacao":"Aguardando Parecer","codSituacao":1100,"despacho":"","ambito":"Regimental"}}"""
-				.formatted(id, URI, id, id % 10000, id);
+				   "descricaoSituacao":"%s","codSituacao":1100,"despacho":"","ambito":"Regimental"}}"""
+				.formatted(id, URI, id, id % 10000, id, situacao);
 	}
 
 	private static String lista(String... itens) {

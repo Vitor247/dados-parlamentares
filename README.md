@@ -74,6 +74,35 @@ Ao fim da Fase A a API já responde tudo o que promete. A Fase B melhora as prop
 
 Cada unidade processada (um deputado, uma proposição) gera uma linha na tabela `ingestao_log` com status `SUCESSO`, `PARCIAL` ou `FALHA`.
 
+### Ingestão agendada (GitHub Actions)
+
+Em hospedagem gratuita a API "dorme" quando fica ociosa, e um `@Scheduled` dentro dela nunca dispararia. Por isso quem agenda é o GitHub: o workflow [`ingestao.yml`](.github/workflows/ingestao.yml) roda **todo dia às 03:00 (Brasília)**, acorda a API pelo health check e executa a carga base seguida de até 20 lotes de enriquecimento (100 proposições por lote, ~30 s cada — chamadas curtas não esbarram no limite de tempo de requisição da hospedagem).
+
+Cada lote processa primeiro as proposições **nunca enriquecidas** e usa as vagas restantes para **revalidar** as que têm situação com mais de 7 dias (`parlamento.ingestao.validade-situacao`), da mais antiga para a mais recente — a situação muda na Câmara ao longo da tramitação. Na prática:
+
+| Momento | O que acontece |
+|---|---|
+| Primeira carga | ~12,5 mil proposições entram pendentes; 20 lotes/noite zeram o acúmulo em ~6 dias (ou uma execução manual com ~120 lotes, em ~1 h) |
+| Regime normal | Cada noite enriquece as ~20–30 proposições novas do dia e revalida ~1.800 situações — ciclo completo da base em ~7 dias, ~10–15 min por noite |
+| Base maior (recorte ampliado) | Aumente `LOTES` no workflow ou a validade da situação |
+
+Para ativar, no repositório do GitHub em **Settings → Secrets and variables → Actions**:
+
+| Tipo | Nome | Valor |
+|---|---|---|
+| Variable | `API_URL` | URL pública da API, ex.: `https://sua-api.onrender.com` |
+| Secret | `ADMIN_API_KEY` | A mesma chave configurada no servidor |
+
+Enquanto `API_URL` não existir, o job é pulado (sem falhas diárias). Também dá para rodar sob demanda em **Actions → Ingestão agendada → Run workflow**, escolhendo se roda a carga base e quantos lotes — útil para a primeira carga, com mais lotes.
+
+A lógica fica em [`.github/scripts/ingestao.mjs`](.github/scripts/ingestao.mjs) (Node, sem dependências) e roda igual localmente:
+
+```bash
+API_URL=http://localhost:8080 ADMIN_API_KEY=... CARGA_BASE=false LOTES=5 node .github/scripts/ingestao.mjs
+```
+
+> O GitHub desativa workflows agendados de repositórios públicos após 60 dias sem atividade no repositório; um commit ou uma execução manual reativa.
+
 ### Configuração
 
 No `docker compose`, via `.env` (veja `.env.example`):
@@ -191,6 +220,8 @@ Erros seguem um formato único:
 ### Dois campos que pedem atenção
 
 **`detalheCarregado`** — a Fase A importa só a identificação e a ementa das proposições. Enquanto `detalheCarregado = false`, situação, data de apresentação, inteiro teor e autoria completa (coautores, autores que não são deputados, ordem de assinatura) **ainda não foram carregados** e aparecem como `null`.
+
+**`situacao.atualizadaEm`** — a situação é uma fotografia da tramitação: este campo diz quando ela foi consultada na fonte (revalidada a cada 7 dias). Não confunda com `_fonte.atualizadoEm`, que a carga diária renova ao sincronizar identificação e ementa.
 
 **`totalProposicoes`** — contagem das proposições de autoria do deputado **que estão na nossa base**, dentro do recorte importado. **Não é métrica de produtividade parlamentar** e não deve ser usada para comparar deputados.
 

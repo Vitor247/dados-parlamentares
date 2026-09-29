@@ -9,6 +9,7 @@ import com.example.parlamento.domain.entity.Proposicao;
 import com.example.parlamento.domain.entity.ProposicaoAutor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -30,6 +31,7 @@ public class ProposicaoApiMapper {
 				proposicao.getEmenta(),
 				proposicao.getDataApresentacao(),
 				proposicao.getSituacaoDescricao(),
+				proposicao.getDetalheAtualizadoEm(),
 				proposicao.isDetalheCarregado(),
 				fonte(proposicao));
 	}
@@ -41,7 +43,8 @@ public class ProposicaoApiMapper {
 						proposicao.getSituacaoCod(),
 						proposicao.getSituacaoData(),
 						proposicao.getSituacaoOrgaoSigla(),
-						proposicao.getTramitacaoDescricao())
+						proposicao.getTramitacaoDescricao(),
+						proposicao.getDetalheAtualizadoEm())
 				: null;
 		return new ProposicaoDto(
 				proposicao.getId(),
@@ -59,13 +62,20 @@ public class ProposicaoApiMapper {
 				fonte(proposicao));
 	}
 
+	/**
+	 * A autoria completa vem do enriquecimento: quando carregada, a procedência informa
+	 * quando ela foi buscada, e não a última regravação da identificação pela Fase A.
+	 */
 	public AutoresDto paraAutores(Proposicao proposicao, List<ProposicaoAutor> autores) {
+		LocalDateTime autoriaAtualizadaEm = proposicao.isDetalheCarregado()
+				? proposicao.getDetalheAtualizadoEm()
+				: proposicao.getAtualizadoEm();
 		return new AutoresDto(
 				proposicao.getId(),
 				identificacao(proposicao),
 				proposicao.isDetalheCarregado(),
 				autores.stream().map(ProposicaoApiMapper::paraAutor).toList(),
-				fonteMapper.camara("proposicoes", proposicao.getId(), null, proposicao.getAtualizadoEm()));
+				fonteMapper.camara("proposicoes", proposicao.getId(), null, autoriaAtualizadaEm));
 	}
 
 	/** "PL 1234/2025" — o identificador que as pessoas de fato usam. */

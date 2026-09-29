@@ -40,17 +40,25 @@ public class IngestaoService {
 		return resultado(inicio, etapas);
 	}
 
-	/** Fase B — enriquecimento de até {@code limite} proposições pendentes. */
+	/**
+	 * Fase B — até {@code limite} proposições: primeiro as nunca enriquecidas, depois as de
+	 * situação mais antiga que a validade configurada.
+	 */
 	public ResultadoIngestao executarEnriquecimento(int limite) {
 		if (limite < 1) {
 			throw new ParametroInvalidoException("limite deve ser maior que zero");
 		}
 		LocalDateTime inicio = LocalDateTime.now();
-		return resultado(inicio, List.of(enriquecimento.enriquecer(limite)));
+		return resultado(inicio, List.of(enriquecimento.enriquecer(limite, corteDeValidade())));
+	}
+
+	private LocalDateTime corteDeValidade() {
+		return LocalDateTime.now().minus(props.validadeSituacao());
 	}
 
 	private ResultadoIngestao resultado(LocalDateTime inicio, List<ResultadoIngestao.Etapa> etapas) {
 		return new ResultadoIngestao(inicio, LocalDateTime.now(), etapas,
-				proposicaoRepository.countByDetalheCarregadoFalse());
+				proposicaoRepository.countByDetalheCarregadoFalse(),
+				proposicaoRepository.countDesatualizadas(corteDeValidade()));
 	}
 }

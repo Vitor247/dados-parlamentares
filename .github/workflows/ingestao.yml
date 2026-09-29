@@ -1,0 +1,48 @@
+name: Ingestão agendada
+
+# Em hospedagem gratuita a API dorme quando ociosa, então @Scheduled dentro dela não
+# dispararia. Quem agenda é o GitHub: a primeira chamada acorda a API.
+on:
+  schedule:
+    - cron: "0 6 * * *" # todo dia às 06:00 UTC (03:00 em Brasília)
+  workflow_dispatch:
+    inputs:
+      carga_base:
+        description: "Executar a carga base (Fase A) antes do enriquecimento"
+        type: boolean
+        default: true
+      lotes:
+        description: "Lotes de enriquecimento: novas e situações desatualizadas (100 por lote, ~30 s cada)"
+        type: number
+        default: 20
+
+# Nunca duas ingestões ao mesmo tempo sobre o mesmo banco.
+concurrency:
+  group: ingestao
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingestao:
+    # Enquanto a API não estiver hospedada (variável API_URL não configurada no repositório),
+    # o job é pulado em vez de falhar todo dia.
+    if: vars.API_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Disparar ingestão
+        env:
+          API_URL: ${{ vars.API_URL }}
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+          # No agendamento não há inputs: vale o padrão (carga base + 20 lotes).
+          CARGA_BASE: ${{ github.event_name == 'schedule' || inputs.carga_base }}
+          LOTES: ${{ inputs.lotes || 20 }}
+        run: node .github/scripts/ingestao.mjs

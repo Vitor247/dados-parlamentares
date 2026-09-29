@@ -23,6 +23,8 @@ public record ProposicaoResumoDto(
 		LocalDateTime dataApresentacao,
 		@Schema(description = "Situação atual; null enquanto detalheCarregado = false", example = "Aguardando Parecer")
 		String situacao,
+		@Schema(description = "Quando a situação foi consultada na fonte; null enquanto detalheCarregado = false")
+		LocalDateTime situacaoAtualizadaEm,
 		@Schema(description = "false = situação e data de apresentação ainda não foram carregadas da fonte "
 				+ "(e por isso vêm null); true = proposição enriquecida")
 		boolean detalheCarregado,

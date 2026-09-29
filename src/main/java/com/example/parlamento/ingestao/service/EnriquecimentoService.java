@@ -25,8 +25,9 @@ import java.util.Set;
 
 /**
  * Fase B: completa proposições com {@code detalhe_carregado = false} — situação,
- * data de apresentação, inteiro teor e autoria completa (coautores e não-deputados).
- * Roda em lotes; é retomável e interrompível: o que falha continua pendente.
+ * data de apresentação, inteiro teor e autoria completa (coautores e não-deputados) —
+ * e revalida as já enriquecidas cuja situação ficou antiga, porque ela muda na Câmara.
+ * Roda em lotes; é retomável e interrompível: o que falha continua na fila.
  */
 @Service
 public class EnriquecimentoService {
@@ -53,14 +54,23 @@ public class EnriquecimentoService {
 		this.transactionTemplate = transactionTemplate;
 	}
 
-	public ResultadoIngestao.Etapa enriquecer(int limite) {
-		List<Long> pendentes = proposicaoRepository.findIdsPendentes(PageRequest.of(0, limite));
+	/**
+	 * Processa até {@code limite} proposições: primeiro as nunca enriquecidas; as vagas
+	 * restantes vão para as de situação mais antiga que {@code corte} (revalidação).
+	 */
+	public ResultadoIngestao.Etapa enriquecer(int limite, LocalDateTime corte) {
+		List<Long> lote = new ArrayList<>(proposicaoRepository.findIdsPendentes(PageRequest.of(0, limite)));
+		int novas = lote.size();
+		if (lote.size() < limite) {
+			lote.addAll(proposicaoRepository.findIdsDesatualizados(corte, PageRequest.of(0, limite - lote.size())));
+		}
 		Set<Long> deputadosNaBase = new HashSet<>(deputadoRepository.findAllIds());
-		log.info("Enriquecimento: {} proposições neste lote (limite {})", pendentes.size(), limite);
+		log.info("Enriquecimento: {} nunca enriquecidas + {} com situação anterior a {} (limite {})",
+				novas, lote.size() - novas, corte, limite);
 
 		int enriquecidas = 0;
 		int falhas = 0;
-		for (Long id : pendentes) {
+		for (Long id : lote) {
 			if (enriquecer(id, deputadosNaBase)) {
 				enriquecidas++;
 			} else {

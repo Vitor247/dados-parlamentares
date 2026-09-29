@@ -249,6 +249,57 @@ class IngestaoWireMockTest extends IntegracaoTest {
 			assertThat(resultado.proposicoesPendentes()).isEqualTo(1);
 			assertThat(contar("select count(*) from proposicao where detalhe_carregado")).isZero();
 		}
+
+		@Test
+		void situacaoDesatualizadaEBuscadaDeNovo() {
+			camara.autores(PROP, autorDeputado(DEP_A, "Deputada A", 1));
+			ingestao.executarEnriquecimento(10);
+			envelhecerSituacao(PROP, 10);
+
+			// Na Câmara, a proposição andou.
+			camara.detalheProposicao(PROP, "Aprovada");
+			var resultado = ingestao.executarEnriquecimento(10);
+
+			assertThat(resultado.etapas().getFirst().processados()).isEqualTo(1);
+			assertThat(jdbc.queryForObject("select situacao_descricao from proposicao where id = ?", String.class, PROP))
+					.isEqualTo("Aprovada");
+			assertThat(resultado.proposicoesDesatualizadas()).isZero();
+		}
+
+		@Test
+		void situacaoRecenteNaoEBuscadaDeNovo() {
+			camara.autores(PROP, autorDeputado(DEP_A, "Deputada A", 1));
+			ingestao.executarEnriquecimento(10);
+
+			var resultado = ingestao.executarEnriquecimento(10);
+
+			assertThat(resultado.etapas().getFirst().processados()).isZero();
+			wm.verify(1, getRequestedFor(urlPathEqualTo(BASE + "/proposicoes/" + PROP)));
+		}
+
+		@Test
+		void nuncaEnriquecidasTemPrioridadeSobreDesatualizadas() {
+			camara.autores(PROP, autorDeputado(DEP_A, "Deputada A", 1));
+			ingestao.executarEnriquecimento(10);
+			envelhecerSituacao(PROP, 10);
+			// Uma proposição nova, ainda sem detalhe.
+			jdbc.update("""
+					insert into proposicao (id, sigla_tipo, numero, ano, detalhe_carregado, atualizado_em)
+					values (5002, 'PL', 2, 2025, false, now())""");
+			camara.detalheProposicao(5002);
+			camara.autores(5002, autorDeputado(DEP_A, "Deputada A", 1));
+
+			var resultado = ingestao.executarEnriquecimento(1);
+
+			assertThat(contar("select count(*) from proposicao where id = 5002 and detalhe_carregado")).isEqualTo(1);
+			assertThat(resultado.proposicoesPendentes()).isZero();
+			assertThat(resultado.proposicoesDesatualizadas()).isEqualTo(1);
+		}
+
+		private void envelhecerSituacao(long proposicaoId, int dias) {
+			jdbc.update("update proposicao set detalhe_atualizado_em = detalhe_atualizado_em - make_interval(days => ?) where id = ?",
+					dias, proposicaoId);
+		}
 	}
 
 	private Long partidoDe(long deputadoId) {

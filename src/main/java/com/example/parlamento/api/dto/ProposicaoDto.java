@@ -32,12 +32,21 @@ public record ProposicaoDto(
 		boolean detalheCarregado,
 		@JsonProperty("_fonte") FonteDto fonte) {
 
-	/** Status atual da proposição conforme publicado pela fonte. */
+	/**
+	 * Status atual da proposição conforme publicado pela fonte.
+	 *
+	 * @param data        data do último evento de tramitação, segundo a Câmara
+	 * @param atualizadaEm quando esta situação foi buscada na fonte — a situação pode ter
+	 *                    mudado na Câmara depois disso
+	 */
 	public record SituacaoDto(
 			String descricao,
 			Integer codigo,
 			LocalDateTime data,
 			String orgaoSigla,
-			String ultimaTramitacao) {
+			String ultimaTramitacao,
+			@Schema(description = "Quando esta situação foi consultada na fonte. A situação é revalidada "
+					+ "periodicamente e pode ter mudado na Câmara desde então.")
+			LocalDateTime atualizadaEm) {
 	}
 }

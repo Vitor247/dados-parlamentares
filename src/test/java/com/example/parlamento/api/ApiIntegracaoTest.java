@@ -52,12 +52,13 @@ class ApiIntegracaoTest extends IntegracaoTest {
 		jdbc.update("""
 				insert into proposicao (id, sigla_tipo, cod_tipo, descricao_tipo, numero, ano, ementa, data_apresentacao,
 				                        url_inteiro_teor, situacao_descricao, situacao_cod, situacao_data,
-				                        situacao_orgao_sigla, tramitacao_descricao, detalhe_carregado, atualizado_em) values
+				                        situacao_orgao_sigla, tramitacao_descricao, detalhe_carregado, detalhe_atualizado_em,
+				                        atualizado_em) values
 				  (5001, 'PL', 139, 'Projeto de Lei', 100, 2025, 'Dispõe sobre a Saúde pública', '2025-04-09 18:16',
 				   'https://www.camara.leg.br/teor/5001', 'Aguardando Parecer', 1100, '2025-04-27 00:00',
-				   'CCJC', 'Recebimento', true, now()),
-				  (5002, 'PEC', 136, null, 7, 2026, 'Reduz em 50% a alíquota', null, null, null, null, null, null, null, false, now()),
-				  (5003, 'PL', 139, null, 200, 2026, 'Institui o dia nacional', null, null, null, null, null, null, null, false, now())""");
+				   'CCJC', 'Recebimento', true, '2026-09-20 03:00', now()),
+				  (5002, 'PEC', 136, null, 7, 2026, 'Reduz em 50% a alíquota', null, null, null, null, null, null, null, false, null, now()),
+				  (5003, 'PL', 139, null, 200, 2026, 'Institui o dia nacional', null, null, null, null, null, null, null, false, null, now())""");
 		jdbc.update("""
 				insert into proposicao_autor (proposicao_id, deputado_id, nome, tipo, cod_tipo, ordem_assinatura, proponente) values
 				  (5001, 1001, 'Ana Silva', 'Deputado(a)', 10000, 1, 1),
@@ -207,6 +208,23 @@ class ApiIntegracaoTest extends IntegracaoTest {
 			resposta.extractingPath("$.dataApresentacao").isEqualTo("2025-04-09T18:16:00");
 			resposta.extractingPath("$.situacao.descricao").isEqualTo("Aguardando Parecer");
 			resposta.extractingPath("$.situacao.orgaoSigla").isEqualTo("CCJC");
+			// Quando a situação foi consultada, e não quando a Fase A regravou a ementa (_fonte).
+			resposta.extractingPath("$.situacao.atualizadaEm").isEqualTo("2026-09-20T03:00:00");
+		}
+
+		@Test
+		void listagemInformaQuandoASituacaoFoiConsultada() {
+			var resposta = assertThat(get("/api/v1/proposicoes?tipo=PL&numero=100&ano=2025")).bodyJson();
+
+			resposta.extractingPath("$.conteudo[0].situacaoAtualizadaEm").isEqualTo("2026-09-20T03:00:00");
+			assertThat(get("/api/v1/proposicoes/5002")).bodyJson()
+					.extractingPath("$").asMap().containsEntry("situacao", null);
+		}
+
+		@Test
+		void procedenciaDaAutoriaCompletaEAConsultaDoDetalhe() {
+			assertThat(get("/api/v1/proposicoes/5001/autores")).bodyJson()
+					.extractingPath("$._fonte.atualizadoEm").isEqualTo("2026-09-20T03:00:00");
 		}
 
 		@Test

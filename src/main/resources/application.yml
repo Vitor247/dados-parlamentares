@@ -59,6 +59,8 @@ parlamento:
     legislatura: 57
     data-apresentacao-inicio: 2025-01-01
     tipos-proposicao: [PL, PEC, PLP, PDL]
+    # Situação enriquecida há mais tempo que isso volta a ser buscada no enriquecimento.
+    validade-situacao: 7d
 
 camara:
   api:

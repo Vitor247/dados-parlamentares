@@ -61,6 +61,10 @@ public class Proposicao {
 	@Column(name = "detalhe_carregado", nullable = false)
 	private boolean detalheCarregado;
 
+	/** Quando situação/autoria foram buscadas na fonte (Fase B). Distinto de atualizadoEm. */
+	@Column(name = "detalhe_atualizado_em")
+	private LocalDateTime detalheAtualizadoEm;
+
 	@Column(name = "atualizado_em", nullable = false)
 	private LocalDateTime atualizadoEm;
 
@@ -185,6 +189,14 @@ public class Proposicao {
 
 	public void setDetalheCarregado(boolean detalheCarregado) {
 		this.detalheCarregado = detalheCarregado;
+	}
+
+	public LocalDateTime getDetalheAtualizadoEm() {
+		return detalheAtualizadoEm;
+	}
+
+	public void setDetalheAtualizadoEm(LocalDateTime detalheAtualizadoEm) {
+		this.detalheAtualizadoEm = detalheAtualizadoEm;
 	}
 
 	public LocalDateTime getAtualizadoEm() {
