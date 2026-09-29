@@ -1,0 +1,365 @@
+/*
+ * Visual neutro de propósito: uma única cor de destaque (verde-azulado), nenhuma cor
+ * associada a partido. O site mostra dado oficial; não avalia nem compara.
+ */
+:root {
+  --fundo: #f7f8f7;
+  --superficie: #ffffff;
+  --superficie-2: #f0f2f1;
+  --texto: #1b1f1e;
+  --texto-suave: #5b6462;
+  --borda: #dde2e0;
+  --destaque: #115e59;
+  --destaque-hover: #0d4a46;
+  --destaque-suave: #e3f1ef;
+  --aviso: #8a5a00;
+  --aviso-fundo: #fdf5e4;
+  --erro: #a3261d;
+  --erro-fundo: #fcecea;
+
+  --raio: 10px;
+  --raio-pequeno: 6px;
+  --sombra: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.03);
+  --largura: 1080px;
+
+  --fonte: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fonte-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #111413;
+    --superficie: #181c1b;
+    --superficie-2: #202524;
+    --texto: #e7ebe9;
+    --texto-suave: #9aa4a1;
+    --borda: #2c3331;
+    --destaque: #5fc4b8;
+    --destaque-hover: #7fd6cb;
+    --destaque-suave: #1b302d;
+    --aviso: #e7b35a;
+    --aviso-fundo: #2a2416;
+    --erro: #f08a80;
+    --erro-fundo: #2c1a18;
+    --sombra: none;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.5em;
+}
+
+h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem);
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--destaque);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--destaque-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: 2px;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ---------- estrutura ---------- */
+
+.pagina {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.conteiner {
+  width: 100%;
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.cabecalho {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+}
+
+.cabecalho .conteiner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+  flex-wrap: wrap;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 650;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.marca:hover {
+  color: var(--texto);
+}
+
+.marca img {
+  width: 28px;
+  height: 28px;
+}
+
+.navegacao {
+  display: flex;
+  gap: 4px;
+}
+
+.navegacao a {
+  padding: 6px 12px;
+  border-radius: var(--raio-pequeno);
+  color: var(--texto-suave);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navegacao a:hover {
+  color: var(--texto);
+  background: var(--superficie-2);
+}
+
+.navegacao a.active {
+  color: var(--destaque);
+  background: var(--destaque-suave);
+}
+
+main {
+  flex: 1;
+  padding: 32px 0 48px;
+}
+
+.rodape {
+  border-top: 1px solid var(--borda);
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+  padding: 20px 0;
+}
+
+.rodape p {
+  margin: 0.25em 0;
+}
+
+/* ---------- componentes ---------- */
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 20px;
+}
+
+.texto-suave {
+  color: var(--texto-suave);
+}
+
+.pequeno {
+  font-size: 0.875rem;
+}
+
+.etiqueta {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--raio-pequeno);
+  border: 1px solid var(--destaque);
+  background: var(--destaque);
+  color: #fff;
+  font: inherit;
+  font-weight: 550;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao:hover {
+  background: var(--destaque-hover);
+  border-color: var(--destaque-hover);
+  color: #fff;
+}
+
+.botao.secundario {
+  background: transparent;
+  color: var(--destaque);
+}
+
+.botao.secundario:hover {
+  background: var(--destaque-suave);
+}
+
+.botao:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+  .botao,
+  .botao:hover {
+    color: #0d1413;
+  }
+
+  .botao.secundario,
+  .botao.secundario:hover {
+    color: var(--destaque);
+  }
+}
+
+/* ---------- estados ---------- */
+
+.estado {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--texto-suave);
+}
+
+.estado.erro {
+  background: var(--erro-fundo);
+  color: var(--erro);
+  border-radius: var(--raio);
+}
+
+.aviso {
+  background: var(--aviso-fundo);
+  color: var(--aviso);
+  border-radius: var(--raio-pequeno);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.girando {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--borda);
+  border-top-color: var(--destaque);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .girando {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ---------- início ---------- */
+
+.apresentacao {
+  max-width: 680px;
+  padding: 24px 0 36px;
+}
+
+.apresentacao p {
+  font-size: 1.1rem;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.numero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+a.numero:hover {
+  color: var(--texto);
+  border-color: var(--destaque);
+}
+
+.numero strong {
+  font-size: 1.9rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.numero span {
+  color: var(--texto-suave);
+}
