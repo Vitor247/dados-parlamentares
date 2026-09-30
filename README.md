@@ -278,7 +278,7 @@ Vercel (frontend)  →  Render (API, Docker)  →  Neon (PostgreSQL)
 
 A ordem importa: a API precisa do banco, o frontend precisa da API, e a API precisa da URL do frontend (CORS).
 
-**1. Banco (Neon).** Crie um projeto na região **AWS US East (Ohio)** — a mesma do Render no [`render.yaml`](render.yaml) (`region: ohio`); se escolher outra, ajuste as duas. Em *Connect*, desligue *Connection pooling* (o Flyway precisa da conexão direta). A string `postgresql://USUARIO:SENHA@HOST/neondb?sslmode=require` vira três variáveis:
+**1. Banco (Neon).** Crie um projeto numa região do leste dos EUA, perto do Render (o [`render.yaml`](render.yaml) usa `region: virginia`; o ideal é **AWS US East (N. Virginia)**, mas Ohio também serve — custa ~10–15 ms a mais por consulta). Em *Connect*, desligue *Connection pooling* (o Flyway precisa da conexão direta). A string `postgresql://USUARIO:SENHA@HOST/neondb?sslmode=require` vira três variáveis:
 
 | Variável | Valor |
 |---|---|

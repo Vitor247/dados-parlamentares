@@ -5,8 +5,10 @@ services:
     name: parlamento-api
     runtime: docker
     plan: free
-    # Mesma região do banco (Neon aws-us-east-2, Ohio): API e banco conversam a cada requisição.
-    region: ohio
+    # O ideal é a mesma região do banco (API e banco conversam a cada requisição). Em produção a
+    # API ficou em Virginia e o banco no Neon aws-us-east-2 (Ohio): ~10-15 ms a mais por consulta,
+    # imperceptível perto do cold start. A região não muda depois que o serviço é criado.
+    region: virginia
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /actuator/health
