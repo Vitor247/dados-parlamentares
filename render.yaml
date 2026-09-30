@@ -5,8 +5,8 @@ services:
     name: parlamento-api
     runtime: docker
     plan: free
-    # Mesma região do banco (Neon aws-us-east-1): API e banco conversam a cada requisição.
-    region: virginia
+    # Mesma região do banco (Neon aws-us-east-2, Ohio): API e banco conversam a cada requisição.
+    region: ohio
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /actuator/health

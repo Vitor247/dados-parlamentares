@@ -268,7 +268,7 @@ Vercel (frontend)  →  Render (API, Docker)  →  Neon (PostgreSQL)
 
 | Serviço | Limites que importam aqui |
 |---|---|
-| **Neon** | 0,5 GB (a base ocupa ~200 MB); suspende após 5 min ocioso e volta em ~1 s |
+| **Neon** | 0,5 GB (a base completa ocupa ~40 MB); suspende após 5 min ocioso e volta em ~1 s |
 | **Render** | 512 MB de RAM e 0,1 CPU; **dorme após 15 min sem tráfego**; requisições de até 100 min. (O Postgres gratuito do Render expira em 30 dias — por isso o banco fica no Neon.) |
 | **Vercel** | Site estático, sem limitação relevante |
 
@@ -278,7 +278,7 @@ Vercel (frontend)  →  Render (API, Docker)  →  Neon (PostgreSQL)
 
 A ordem importa: a API precisa do banco, o frontend precisa da API, e a API precisa da URL do frontend (CORS).
 
-**1. Banco (Neon).** Crie um projeto na região **AWS US East (N. Virginia)** — a mesma do Render. Em *Connect*, desligue *Connection pooling* (o Flyway precisa da conexão direta). A string `postgresql://USUARIO:SENHA@HOST/neondb?sslmode=require` vira três variáveis:
+**1. Banco (Neon).** Crie um projeto na região **AWS US East (Ohio)** — a mesma do Render no [`render.yaml`](render.yaml) (`region: ohio`); se escolher outra, ajuste as duas. Em *Connect*, desligue *Connection pooling* (o Flyway precisa da conexão direta). A string `postgresql://USUARIO:SENHA@HOST/neondb?sslmode=require` vira três variáveis:
 
 | Variável | Valor |
 |---|---|
