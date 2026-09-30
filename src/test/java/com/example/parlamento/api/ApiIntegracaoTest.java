@@ -371,7 +371,7 @@ class ApiIntegracaoTest extends IntegracaoTest {
 					.extractingPath("$.info.description").asString();
 
 			descricao.contains("Dados Abertos da Câmara dos Deputados");
-			descricao.contains("Legislatura: **57**", "2025-01-01", "PL, PEC, PLP, PDL");
+			descricao.contains("Legislatura: **57**", "2023-02-01", "PL, PEC, PLP, PDL");
 			descricao.contains("`detalheCarregado`");
 			descricao.contains("Não é métrica de produtividade parlamentar");
 		}

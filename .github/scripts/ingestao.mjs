@@ -9,7 +9,7 @@
  *   API_URL        (obrigatória) raiz da API, sem barra final
  *   ADMIN_API_KEY  (obrigatória) chave do header X-Admin-Key
  *   CARGA_BASE     "true" (padrão) | "false" — executa a Fase A antes do enriquecimento
- *   LOTES          quantos lotes de enriquecimento no máximo (padrão 20; 0 = nenhum)
+ *   LOTES          quantos lotes de enriquecimento no máximo (padrão 40; 0 = nenhum)
  *   TAMANHO_LOTE   proposições por lote (padrão 100, ~30 s cada: chamadas curtas não
  *                  esbarram em limite de tempo de requisição da hospedagem)
  */
@@ -18,7 +18,7 @@ import { appendFileSync } from 'node:fs';
 const API_URL = obrigatoria('API_URL').replace(/\/+$/, '');
 const ADMIN_API_KEY = obrigatoria('ADMIN_API_KEY');
 const CARGA_BASE = (process.env.CARGA_BASE ?? 'true') === 'true';
-const LOTES = inteiro('LOTES', 20);
+const LOTES = inteiro('LOTES', 40);
 const TAMANHO_LOTE = inteiro('TAMANHO_LOTE', 100);
 
 const MINUTO = 60_000;

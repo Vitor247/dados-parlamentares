@@ -6,7 +6,7 @@ import { Carregando, MensagemErro, Vazio } from '../componentes/Estados'
 import { ItemProposicao } from '../componentes/ItemProposicao'
 import { Paginacao } from '../componentes/Paginacao'
 import { useFiltrosNaUrl } from '../componentes/useFiltrosNaUrl'
-import { ANOS, TIPOS_PROPOSICAO } from '../constantes'
+import { ANOS, DESCRICAO_RECORTE, TIPOS_PROPOSICAO } from '../constantes'
 
 const CAMPOS = ['tipo', 'numero', 'ano', 'ementa'] as const
 
@@ -29,7 +29,8 @@ export function Proposicoes() {
       <h1>Proposições</h1>
       <p className="texto-suave">
         Projetos de lei, propostas de emenda à Constituição, projetos de lei complementar e de decreto legislativo
-        apresentados desde 2025. Para achar uma proposição específica, como “PL 1234/2025”, use tipo, número e ano.
+        apresentados desde fevereiro de 2023, início da legislatura 57. Para achar uma proposição específica, como
+        “PL 1234/2025”, use tipo, número e ano.
       </p>
 
       <form className="filtros" role="search" onSubmit={(e) => e.preventDefault()}>
@@ -75,8 +76,7 @@ export function Proposicoes() {
         <Carregando />
       ) : proposicoes.dados.totalElementos === 0 ? (
         <Vazio>
-          Nenhuma proposição na base com esses filtros. Lembre que só estão aqui proposições dos tipos PL, PEC, PLP e
-          PDL apresentadas desde 2025.
+          Nenhuma proposição na base com esses filtros. Lembre que só estão aqui {DESCRICAO_RECORTE}.
         </Vazio>
       ) : (
         <div className={proposicoes.carregando ? 'atualizando' : undefined}>

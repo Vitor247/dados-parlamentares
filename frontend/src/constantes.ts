@@ -11,8 +11,15 @@ export const TIPOS_PROPOSICAO = [
   { sigla: 'PDL', nome: 'Projeto de Decreto Legislativo' },
 ] as const
 
-/** Anos cobertos pelo recorte: proposições apresentadas desde 2025 até hoje. */
-export const ANOS = Array.from({ length: new Date().getFullYear() - 2025 + 1 }, (_, i) => 2025 + i).reverse()
+/** Recorte importado pela API (parlamento.ingestao.data-apresentacao-inicio): início da legislatura 57. */
+const ANO_INICIAL = 2023
+
+/** Descrição do recorte para os textos do site. */
+export const DESCRICAO_RECORTE =
+  'proposições dos tipos PL, PEC, PLP e PDL apresentadas desde fevereiro de 2023, início da legislatura 57'
+
+/** Anos cobertos pelo recorte, do mais recente para o mais antigo. */
+export const ANOS = Array.from({ length: new Date().getFullYear() - ANO_INICIAL + 1 }, (_, i) => ANO_INICIAL + i).reverse()
 
 export function paginaDoDeputadoNaCamara(id: number) {
   return `https://www.camara.leg.br/deputados/${id}`

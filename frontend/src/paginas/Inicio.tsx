@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import type { DeputadoResumo, Pagina, PartidoResumo, ProposicaoResumo } from '../api/tipos'
 import { useApi } from '../api/useApi'
 import { Carregando, MensagemErro } from '../componentes/Estados'
+import { DESCRICAO_RECORTE } from '../constantes'
 import { formatarNumero } from '../formatar'
 
 export function Inicio() {
@@ -51,7 +52,7 @@ export function Inicio() {
           </div>
         )}
         <p className="pequeno texto-suave">
-          Legislatura 57 · proposições dos tipos PL, PEC, PLP e PDL apresentadas desde 2025.
+          Na base: deputados da legislatura 57 e {DESCRICAO_RECORTE}.
         </p>
       </section>
     </div>

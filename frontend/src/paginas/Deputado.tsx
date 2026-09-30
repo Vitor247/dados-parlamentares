@@ -9,7 +9,7 @@ import { FotoDeputado } from '../componentes/FotoDeputado'
 import { ItemProposicao } from '../componentes/ItemProposicao'
 import { Paginacao } from '../componentes/Paginacao'
 import { useFiltrosNaUrl } from '../componentes/useFiltrosNaUrl'
-import { ANOS, TIPOS_PROPOSICAO, paginaDoDeputadoNaCamara } from '../constantes'
+import { ANOS, DESCRICAO_RECORTE, TIPOS_PROPOSICAO, paginaDoDeputadoNaCamara } from '../constantes'
 import { formatarData, formatarNumero } from '../formatar'
 import { NaoEncontrado } from './NaoEncontrado'
 
@@ -87,8 +87,7 @@ function ProposicoesDoDeputado({ id, total }: { id: number; total: number }) {
         <h2>Proposições de autoria</h2>
         <p className="pequeno texto-suave">
           {formatarNumero(total)} {total === 1 ? 'proposição' : 'proposições'} na base, dentro do recorte importado
-          (PL, PEC, PLP e PDL desde 2025). É uma contagem do que está disponível aqui, não uma medida de
-          produtividade.
+          ({DESCRICAO_RECORTE}). É uma contagem do que está disponível aqui, não uma medida de produtividade.
         </p>
       </div>
 

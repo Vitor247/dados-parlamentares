@@ -14,7 +14,7 @@ on:
       lotes:
         description: "Lotes de enriquecimento: novas e situações desatualizadas (100 por lote, ~30 s cada)"
         type: number
-        default: 20
+        default: 40
 
 # Nunca duas ingestões ao mesmo tempo sobre o mesmo banco.
 concurrency:
@@ -42,7 +42,8 @@ jobs:
         env:
           API_URL: ${{ vars.API_URL }}
           ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
-          # No agendamento não há inputs: vale o padrão (carga base + 20 lotes).
+          # No agendamento não há inputs: vale o padrão (carga base + 40 lotes). Com ~28 mil
+          # proposições e validade de 7 dias, ~4 mil revalidações por noite mantêm o ciclo em dia.
           CARGA_BASE: ${{ github.event_name == 'schedule' || inputs.carga_base }}
-          LOTES: ${{ inputs.lotes || 20 }}
+          LOTES: ${{ inputs.lotes || 40 }}
         run: node .github/scripts/ingestao.mjs

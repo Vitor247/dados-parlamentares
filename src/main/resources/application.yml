@@ -57,7 +57,8 @@ parlamento:
 
   ingestao:
     legislatura: 57
-    data-apresentacao-inicio: 2025-01-01
+    # Início da legislatura 57: o perfil de cada deputado mostra o mandato inteiro.
+    data-apresentacao-inicio: 2023-02-01
     tipos-proposicao: [PL, PEC, PLP, PDL]
     # Situação enriquecida há mais tempo que isso volta a ser buscada no enriquecimento.
     validade-situacao: 7d

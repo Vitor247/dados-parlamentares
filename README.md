@@ -76,14 +76,14 @@ Cada unidade processada (um deputado, uma proposição) gera uma linha na tabela
 
 ### Ingestão agendada (GitHub Actions)
 
-Em hospedagem gratuita a API "dorme" quando fica ociosa, e um `@Scheduled` dentro dela nunca dispararia. Por isso quem agenda é o GitHub: o workflow [`ingestao.yml`](.github/workflows/ingestao.yml) roda **todo dia às 03:00 (Brasília)**, acorda a API pelo health check e executa a carga base seguida de até 20 lotes de enriquecimento (100 proposições por lote, ~30 s cada — chamadas curtas não esbarram no limite de tempo de requisição da hospedagem).
+Em hospedagem gratuita a API "dorme" quando fica ociosa, e um `@Scheduled` dentro dela nunca dispararia. Por isso quem agenda é o GitHub: o workflow [`ingestao.yml`](.github/workflows/ingestao.yml) roda **todo dia às 03:00 (Brasília)**, acorda a API pelo health check e executa a carga base seguida de até 40 lotes de enriquecimento (100 proposições por lote, ~30 s cada — chamadas curtas não esbarram no limite de tempo de requisição da hospedagem).
 
 Cada lote processa primeiro as proposições **nunca enriquecidas** e usa as vagas restantes para **revalidar** as que têm situação com mais de 7 dias (`parlamento.ingestao.validade-situacao`), da mais antiga para a mais recente — a situação muda na Câmara ao longo da tramitação. Na prática:
 
 | Momento | O que acontece |
 |---|---|
-| Primeira carga | ~12,5 mil proposições entram pendentes; 20 lotes/noite zeram o acúmulo em ~6 dias (ou uma execução manual com ~120 lotes, em ~1 h) |
-| Regime normal | Cada noite enriquece as ~20–30 proposições novas do dia e revalida ~1.800 situações — ciclo completo da base em ~7 dias, ~10–15 min por noite |
+| Primeira carga | ~28 mil proposições entram pendentes. Mais rápido fazê-la localmente e copiar a base pronta (veja *Deploy*); pelo agendamento, 40 lotes/noite zeram o acúmulo em ~7 dias |
+| Regime normal | Cada noite enriquece as proposições novas do dia e revalida ~4 mil situações — ciclo completo da base em ~7 dias, ~20–25 min por noite |
 | Base maior (recorte ampliado) | Aumente `LOTES` no workflow ou a validade da situação |
 
 Para ativar, no repositório do GitHub em **Settings → Secrets and variables → Actions**:
@@ -126,7 +126,7 @@ O recorte de dados fica em `application.yml`:
 parlamento:
   ingestao:
     legislatura: 57
-    data-apresentacao-inicio: 2025-01-01
+    data-apresentacao-inicio: 2023-02-01   # início da legislatura 57
     tipos-proposicao: [PL, PEC, PLP, PDL]
 ```
 
@@ -268,7 +268,7 @@ Vercel (frontend)  →  Render (API, Docker)  →  Neon (PostgreSQL)
 
 | Serviço | Limites que importam aqui |
 |---|---|
-| **Neon** | 0,5 GB (a base ocupa ~100 MB); suspende após 5 min ocioso e volta em ~1 s |
+| **Neon** | 0,5 GB (a base ocupa ~200 MB); suspende após 5 min ocioso e volta em ~1 s |
 | **Render** | 512 MB de RAM e 0,1 CPU; **dorme após 15 min sem tráfego**; requisições de até 100 min. (O Postgres gratuito do Render expira em 30 dias — por isso o banco fica no Neon.) |
 | **Vercel** | Site estático, sem limitação relevante |
 
@@ -296,7 +296,18 @@ As tabelas são criadas pelo Flyway na primeira subida da API.
 
 **5. GitHub Actions.** Em *Settings → Secrets and variables → Actions*: variável `API_URL` (URL da API) e secret `ADMIN_API_KEY` (o valor do passo 2).
 
-**6. Primeira carga.** Em *Actions → Ingestão agendada → Run workflow*, com a carga base marcada e **130** lotes (~1 h 15 min). Assim que a carga base termina (~5 min) o site já mostra deputados e proposições; situação e autoria completa vão aparecendo durante o enriquecimento. Se o job passar do limite de 2 h, nada se perde: uma nova execução (sem a carga base) continua de onde parou.
+**6. Primeira carga.** São ~28 mil proposições. Na instância gratuita (0,1 CPU) e com o limite de 2 h do Actions, isso levaria várias execuções — é mais rápido carregar **localmente** e copiar a base pronta para o Neon, **antes do primeiro deploy no Render** (o Flyway então só valida o schema que já está lá):
+
+```bash
+# 1. Carga completa na base local (~2–2h30; a API local precisa de uma ADMIN_API_KEY)
+API_URL=http://localhost:8080 ADMIN_API_KEY=... LOTES=400 node .github/scripts/ingestao.mjs
+
+# 2. Cópia para o Neon, de dentro do container do Postgres (sem arquivo intermediário)
+docker exec -e NEON_URL="postgresql://USUARIO:SENHA@HOST/neondb?sslmode=require" parlamento-postgres \
+  sh -c 'pg_dump -U parlamento -d parlamento --no-owner --no-privileges | psql "$NEON_URL" -v ON_ERROR_STOP=1 -q'
+```
+
+Alternativa sem carga local: depois do deploy, rode *Actions → Ingestão agendada → Run workflow* com a carga base marcada e o máximo de lotes; se passar das 2 h, uma nova execução (sem a carga base) continua de onde parou.
 
 ### Problemas comuns
 
