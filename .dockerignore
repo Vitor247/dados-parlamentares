@@ -9,6 +9,7 @@ target/
 .env
 docs/
 README.md
+DEPLOY.md
 LICENSE
 docker-compose.yml
 Dockerfile

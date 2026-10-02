@@ -1,5 +1,5 @@
 # Blueprint do Render: a API como web service Docker no plano gratuito.
-# Passo a passo completo na seção "Deploy" do README.
+# Passo a passo completo em DEPLOY.md.
 services:
   - type: web
     name: parlamento-api
