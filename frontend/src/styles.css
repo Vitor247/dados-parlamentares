@@ -388,6 +388,17 @@ a.numero:hover {
   flex: 1 1 240px;
 }
 
+/* Descrições de situação são longas; o select ocupa a linha no celular. */
+.campo-situacao {
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+
+.campo-situacao select {
+  width: 100%;
+  text-overflow: ellipsis;
+}
+
 .campo input,
 .campo select {
   font: inherit;

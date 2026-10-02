@@ -23,6 +23,7 @@ import java.util.List;
 import static com.example.parlamento.domain.repository.ProposicaoSpecs.deAutoria;
 import static com.example.parlamento.domain.repository.ProposicaoSpecs.doAno;
 import static com.example.parlamento.domain.repository.ProposicaoSpecs.doTipo;
+import static com.example.parlamento.domain.repository.ProposicaoSpecs.naSituacao;
 
 @Service
 @Transactional(readOnly = true)
@@ -57,11 +58,13 @@ public class DeputadoConsultaService {
 	}
 
 	/** Proposições de autoria do deputado. Deputado inexistente é 404, não página vazia. */
-	public PaginaDto<ProposicaoResumoDto> listarProposicoes(Long id, Integer ano, String tipo, Pageable pageable) {
+	public PaginaDto<ProposicaoResumoDto> listarProposicoes(Long id, Integer ano, String tipo, String situacao,
+			Pageable pageable) {
 		if (!repository.existsById(id)) {
 			throw new RecursoNaoEncontradoException("Deputado", id);
 		}
-		Specification<Proposicao> filtro = Specification.allOf(List.of(deAutoria(id), doAno(ano), doTipo(tipo)));
+		Specification<Proposicao> filtro = Specification.allOf(List.of(
+				deAutoria(id), doAno(ano), doTipo(tipo), naSituacao(situacao)));
 		return PaginaDto.de(proposicaoRepository.findAll(filtro, pageable),
 				proposicaoMapper::paraResumo, Proposicao::getAtualizadoEm);
 	}

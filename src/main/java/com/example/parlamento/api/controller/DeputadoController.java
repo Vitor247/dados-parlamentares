@@ -71,7 +71,9 @@ public class DeputadoController {
 			@Parameter(description = "Id oficial do deputado na Câmara", example = "204379") @PathVariable Long id,
 			@Parameter(description = "Ano da proposição", example = "2025") @RequestParam(required = false) Integer ano,
 			@Parameter(description = "Sigla do tipo (PL, PEC, PLP, PDL)", example = "PL") @RequestParam(required = false) String tipo,
+			@Parameter(description = "Situação atual, pelo texto exato (valores em /proposicoes/situacoes)",
+					example = "Aguardando Parecer") @RequestParam(required = false) String situacao,
 			@ParameterObject @PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
-		return service.listarProposicoes(id, ano, tipo, pageable);
+		return service.listarProposicoes(id, ano, tipo, situacao, pageable);
 	}
 }

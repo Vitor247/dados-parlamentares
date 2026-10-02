@@ -200,6 +200,44 @@ class ApiIntegracaoTest extends IntegracaoTest {
 		}
 
 		@Test
+		void filtraPelaSituacaoAtual() {
+			assertThat(mvc.get().uri("/api/v1/proposicoes").param("situacao", "Aguardando Parecer").exchange())
+					.bodyJson().extractingPath("$.conteudo[*].id").asArray().containsExactly(5001);
+			// Sem situação publicada (5002, 5003) não aparece quando o filtro é usado.
+			assertThat(mvc.get().uri("/api/v1/proposicoes").param("situacao", "Situação que não existe").exchange())
+					.bodyJson().extractingPath("$.totalElementos").isEqualTo(0);
+		}
+
+		@Test
+		void filtroDeSituacaoCombinaComOsDemaisENoPerfilDoDeputado() {
+			assertThat(mvc.get().uri("/api/v1/proposicoes").param("situacao", "Aguardando Parecer").param("ano", "2026")
+					.exchange()).bodyJson().extractingPath("$.totalElementos").isEqualTo(0);
+			assertThat(mvc.get().uri("/api/v1/deputados/1001/proposicoes").param("situacao", "Aguardando Parecer")
+					.exchange()).bodyJson().extractingPath("$.conteudo[*].id").asArray().containsExactly(5001);
+			assertThat(mvc.get().uri("/api/v1/deputados/1002/proposicoes").param("situacao", "Aguardando Parecer")
+					.exchange()).bodyJson().extractingPath("$.conteudo[*].id").asArray().containsExactly(5001);
+		}
+
+		@Test
+		void situacoesListaAsPresentesNaBaseComTotaisEmOrdemAlfabeticaDoPortugues() {
+			jdbc.update("update proposicao set situacao_descricao = 'Aguardando Parecer' where id = 5002");
+			jdbc.update("update proposicao set situacao_descricao = 'Ação de teste' where id = 5003");
+
+			var resposta = assertThat(get("/api/v1/proposicoes/situacoes")).hasStatusOk().bodyJson();
+
+			// Byte a byte, "Aguardando" viria antes de "Ação"; em português, "Ação" vem primeiro.
+			resposta.extractingPath("$.situacoes[*].descricao").asArray()
+					.containsExactly("Ação de teste", "Aguardando Parecer");
+			resposta.extractingPath("$.situacoes[1].total").isEqualTo(2);
+		}
+
+		@Test
+		void situacoesNaoIncluiProposicoesSemSituacao() {
+			assertThat(get("/api/v1/proposicoes/situacoes")).bodyJson()
+					.extractingPath("$.situacoes[*].descricao").asArray().containsExactly("Aguardando Parecer");
+		}
+
+		@Test
 		void detalheEnriquecidoTrazSituacaoAtual() {
 			var resposta = assertThat(get("/api/v1/proposicoes/5001")).hasStatusOk().bodyJson();
 

@@ -46,6 +46,18 @@ public final class ProposicaoSpecs {
 		return (root, query, cb) -> cb.equal(root.get("numero"), numero);
 	}
 
+	/**
+	 * Situação atual pela descrição exata publicada pela fonte. Proposições sem situação
+	 * (não publicada ou ainda não enriquecidas) ficam fora quando o filtro é usado.
+	 */
+	public static Specification<Proposicao> naSituacao(String descricao) {
+		if (descricao == null || descricao.isBlank()) {
+			return Specification.unrestricted();
+		}
+		String valor = descricao.strip();
+		return (root, query, cb) -> cb.equal(root.get("situacaoDescricao"), valor);
+	}
+
 	/** Trecho da ementa, sem diferenciar maiúsculas (ILIKE %valor%). */
 	public static Specification<Proposicao> ementaContem(String trecho) {
 		return TextoSpecs.contem("ementa", trecho);

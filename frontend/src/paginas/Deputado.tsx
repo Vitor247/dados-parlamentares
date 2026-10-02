@@ -8,6 +8,7 @@ import { FonteDados } from '../componentes/FonteDados'
 import { FotoDeputado } from '../componentes/FotoDeputado'
 import { ItemProposicao } from '../componentes/ItemProposicao'
 import { Paginacao } from '../componentes/Paginacao'
+import { SeletorSituacao } from '../componentes/SeletorSituacao'
 import { useFiltrosNaUrl } from '../componentes/useFiltrosNaUrl'
 import { ANOS, DESCRICAO_RECORTE, TIPOS_PROPOSICAO, paginaDoDeputadoNaCamara } from '../constantes'
 import { formatarData, formatarNumero } from '../formatar'
@@ -70,13 +71,14 @@ export function Deputado() {
   )
 }
 
-const CAMPOS = ['ano', 'tipo'] as const
+const CAMPOS = ['ano', 'tipo', 'situacao'] as const
 
 function ProposicoesDoDeputado({ id, total }: { id: number; total: number }) {
   const { filtros, pagina, paginaApi, alterarFiltro, irParaPagina } = useFiltrosNaUrl(CAMPOS)
   const proposicoes = useApi<Pagina<ProposicaoResumo>>(`/api/v1/deputados/${id}/proposicoes`, {
     ano: filtros.ano,
     tipo: filtros.tipo,
+    situacao: filtros.situacao,
     page: paginaApi,
     size: 10,
   })
@@ -112,6 +114,7 @@ function ProposicoesDoDeputado({ id, total }: { id: number; total: number }) {
             ))}
           </select>
         </label>
+        <SeletorSituacao valor={filtros.situacao} aoMudar={(v) => alterarFiltro('situacao', v)} />
       </form>
 
       {proposicoes.erro ? (

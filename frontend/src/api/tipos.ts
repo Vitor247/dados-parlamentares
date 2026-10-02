@@ -109,6 +109,11 @@ export interface Autores {
   _fonte: Fonte
 }
 
+/** Situações presentes na base (GET /proposicoes/situacoes). */
+export interface Situacoes {
+  situacoes: { descricao: string; total: number }[]
+}
+
 /** Corpo de erro padrão da API (StandardError). */
 export interface ErroPadrao {
   timestamp: string

@@ -26,4 +26,11 @@ public interface ProposicaoRepository extends JpaRepository<Proposicao, Long>, J
 
 	@Query("select count(p) from Proposicao p where p.detalheCarregado = true and p.detalheAtualizadoEm < :corte")
 	long countDesatualizadas(LocalDateTime corte);
+
+	/** Situações presentes na base, agrupadas pela descrição (códigos distintos podem compartilhar texto). */
+	@Query("""
+			select p.situacaoDescricao as descricao, count(p) as total from Proposicao p
+			where p.situacaoDescricao is not null
+			group by p.situacaoDescricao""")
+	List<SituacaoContagem> contarPorSituacao();
 }

@@ -4,6 +4,7 @@ import com.example.parlamento.api.dto.AutoresDto;
 import com.example.parlamento.api.dto.PaginaDto;
 import com.example.parlamento.api.dto.ProposicaoDto;
 import com.example.parlamento.api.dto.ProposicaoResumoDto;
+import com.example.parlamento.api.dto.SituacoesDto;
 import com.example.parlamento.api.service.ProposicaoConsultaService;
 import com.example.parlamento.exception.StandardError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,8 +47,20 @@ public class ProposicaoController {
 			@Parameter(description = "Número da proposição", example = "387") @RequestParam(required = false) Integer numero,
 			@Parameter(description = "Trecho da ementa, sem diferenciar maiúsculas", example = "saúde")
 			@RequestParam(required = false) String ementa,
+			@Parameter(description = "Situação atual, pelo texto exato (valores em /proposicoes/situacoes)",
+					example = "Aguardando Parecer") @RequestParam(required = false) String situacao,
 			@ParameterObject @PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
-		return service.listar(ano, tipo, numero, ementa, pageable);
+		return service.listar(ano, tipo, numero, ementa, situacao, pageable);
+	}
+
+	@Operation(summary = "Lista as situações presentes na base",
+			description = "Situações atuais em que há proposições na base, com quantas estão em cada uma, em ordem "
+					+ "alfabética. A descrição é o valor do filtro `situacao`. É uma fotografia: a situação é "
+					+ "revalidada periodicamente na fonte. Proposições sem situação publicada não entram na lista.")
+	@ApiResponse(responseCode = "200", description = "Situações e totais")
+	@GetMapping("/situacoes")
+	public SituacoesDto listarSituacoes() {
+		return service.listarSituacoes();
 	}
 
 	@Operation(summary = "Detalha uma proposição",

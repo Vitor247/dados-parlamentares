@@ -5,10 +5,11 @@ import { CampoBusca } from '../componentes/CampoBusca'
 import { Carregando, MensagemErro, Vazio } from '../componentes/Estados'
 import { ItemProposicao } from '../componentes/ItemProposicao'
 import { Paginacao } from '../componentes/Paginacao'
+import { SeletorSituacao } from '../componentes/SeletorSituacao'
 import { useFiltrosNaUrl } from '../componentes/useFiltrosNaUrl'
 import { ANOS, DESCRICAO_RECORTE, TIPOS_PROPOSICAO } from '../constantes'
 
-const CAMPOS = ['tipo', 'numero', 'ano', 'ementa'] as const
+const CAMPOS = ['tipo', 'numero', 'ano', 'situacao', 'ementa'] as const
 
 export function Proposicoes() {
   const { filtros, pagina, paginaApi, alterarFiltro, irParaPagina, limpar } = useFiltrosNaUrl(CAMPOS)
@@ -16,6 +17,7 @@ export function Proposicoes() {
     tipo: filtros.tipo,
     numero: filtros.numero,
     ano: filtros.ano,
+    situacao: filtros.situacao,
     ementa: filtros.ementa,
     page: paginaApi,
     size: 20,
@@ -62,6 +64,7 @@ export function Proposicoes() {
             ))}
           </select>
         </label>
+        <SeletorSituacao valor={filtros.situacao} aoMudar={(v) => alterarFiltro('situacao', v)} mostrarTotais />
         <CampoBusca rotulo="Palavra na ementa" valor={filtros.ementa} placeholder="Ex.: saúde" aoMudar={alterarEmenta} />
         {temFiltro && (
           <button type="button" className="botao secundario" onClick={limpar}>
