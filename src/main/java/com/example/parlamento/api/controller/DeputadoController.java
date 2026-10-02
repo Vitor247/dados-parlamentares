@@ -4,6 +4,7 @@ import com.example.parlamento.api.dto.DeputadoDto;
 import com.example.parlamento.api.dto.DeputadoResumoDto;
 import com.example.parlamento.api.dto.PaginaDto;
 import com.example.parlamento.api.dto.ProposicaoResumoDto;
+import com.example.parlamento.api.dto.SituacoesDto;
 import com.example.parlamento.api.service.DeputadoConsultaService;
 import com.example.parlamento.exception.StandardError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,5 +76,19 @@ public class DeputadoController {
 					example = "Aguardando Parecer") @RequestParam(required = false) String situacao,
 			@ParameterObject @PageableDefault(size = Paginacao.TAMANHO_PADRAO, sort = {"ano", "numero"}, direction = Sort.Direction.DESC) Pageable pageable) {
 		return service.listarProposicoes(id, ano, tipo, situacao, pageable);
+	}
+
+	@Operation(summary = "Lista as situações das proposições do deputado",
+			description = "Situações em que o deputado tem proposições de autoria, com os totais, respeitando os "
+					+ "filtros `ano` e `tipo`: só aparecem opções que retornam resultado.")
+	@ApiResponse(responseCode = "200", description = "Situações e totais")
+	@ApiResponse(responseCode = "404", description = "Deputado não encontrado",
+			content = @Content(schema = @Schema(implementation = StandardError.class)))
+	@GetMapping("/{id}/proposicoes/situacoes")
+	public SituacoesDto listarSituacoesDasProposicoes(
+			@Parameter(description = "Id oficial do deputado na Câmara", example = "204379") @PathVariable Long id,
+			@Parameter(description = "Ano da proposição", example = "2025") @RequestParam(required = false) Integer ano,
+			@Parameter(description = "Sigla do tipo (PL, PEC, PLP, PDL)", example = "PL") @RequestParam(required = false) String tipo) {
+		return service.listarSituacoesDasProposicoes(id, ano, tipo);
 	}
 }

@@ -232,6 +232,37 @@ class ApiIntegracaoTest extends IntegracaoTest {
 		}
 
 		@Test
+		void situacoesDoDeputadoMostramSoAsDeleComOsTotaisDele() {
+			// 5002 (autora: Ana) e 5003 (autor: Bruno) ganham situações diferentes.
+			jdbc.update("update proposicao set situacao_descricao = 'Arquivada' where id = 5002");
+			jdbc.update("update proposicao set situacao_descricao = 'Pronta para Pauta' where id = 5003");
+
+			var ana = assertThat(get("/api/v1/deputados/1001/proposicoes/situacoes")).hasStatusOk().bodyJson();
+			ana.extractingPath("$.situacoes[*].descricao").asArray()
+					.containsExactly("Aguardando Parecer", "Arquivada")
+					.doesNotContain("Pronta para Pauta");
+			ana.extractingPath("$.situacoes[1].total").isEqualTo(1);
+		}
+
+		@Test
+		void situacoesAcompanhamOsDemaisFiltros() {
+			jdbc.update("update proposicao set situacao_descricao = 'Arquivada' where id = 5002");
+			jdbc.update("update proposicao set situacao_descricao = 'Pronta para Pauta' where id = 5003");
+
+			// Em 2026 só há 5002 e 5003: "Aguardando Parecer" (5001, de 2025) não pode ser oferecida.
+			assertThat(get("/api/v1/proposicoes/situacoes?ano=2026")).bodyJson()
+					.extractingPath("$.situacoes[*].descricao").asArray()
+					.containsExactly("Arquivada", "Pronta para Pauta");
+			assertThat(get("/api/v1/deputados/1001/proposicoes/situacoes?tipo=PEC")).bodyJson()
+					.extractingPath("$.situacoes[*].descricao").asArray().containsExactly("Arquivada");
+		}
+
+		@Test
+		void situacoesDeDeputadoInexistenteE404() {
+			assertThat(get("/api/v1/deputados/999999/proposicoes/situacoes")).hasStatus(HttpStatus.NOT_FOUND);
+		}
+
+		@Test
 		void situacoesNaoIncluiProposicoesSemSituacao() {
 			assertThat(get("/api/v1/proposicoes/situacoes")).bodyJson()
 					.extractingPath("$.situacoes[*].descricao").asArray().containsExactly("Aguardando Parecer");

@@ -114,7 +114,12 @@ function ProposicoesDoDeputado({ id, total }: { id: number; total: number }) {
             ))}
           </select>
         </label>
-        <SeletorSituacao valor={filtros.situacao} aoMudar={(v) => alterarFiltro('situacao', v)} />
+        <SeletorSituacao
+          caminho={`/api/v1/deputados/${id}/proposicoes/situacoes`}
+          filtros={{ ano: filtros.ano, tipo: filtros.tipo }}
+          valor={filtros.situacao}
+          aoMudar={(v) => alterarFiltro('situacao', v)}
+        />
       </form>
 
       {proposicoes.erro ? (

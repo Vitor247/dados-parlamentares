@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface ProposicaoRepository extends JpaRepository<Proposicao, Long>, JpaSpecificationExecutor<Proposicao> {
+public interface ProposicaoRepository extends JpaRepository<Proposicao, Long>, JpaSpecificationExecutor<Proposicao>,
+		ProposicaoRepositoryCustom {
 
 	/** Nunca enriquecidas (usa o índice parcial idx_proposicao_pendente). */
 	@Query("select p.id from Proposicao p where p.detalheCarregado = false order by p.id")
@@ -26,11 +27,4 @@ public interface ProposicaoRepository extends JpaRepository<Proposicao, Long>, J
 
 	@Query("select count(p) from Proposicao p where p.detalheCarregado = true and p.detalheAtualizadoEm < :corte")
 	long countDesatualizadas(LocalDateTime corte);
-
-	/** Situações presentes na base, agrupadas pela descrição (códigos distintos podem compartilhar texto). */
-	@Query("""
-			select p.situacaoDescricao as descricao, count(p) as total from Proposicao p
-			where p.situacaoDescricao is not null
-			group by p.situacaoDescricao""")
-	List<SituacaoContagem> contarPorSituacao();
 }

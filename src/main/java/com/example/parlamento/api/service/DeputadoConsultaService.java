@@ -4,6 +4,7 @@ import com.example.parlamento.api.dto.DeputadoDto;
 import com.example.parlamento.api.dto.DeputadoResumoDto;
 import com.example.parlamento.api.dto.PaginaDto;
 import com.example.parlamento.api.dto.ProposicaoResumoDto;
+import com.example.parlamento.api.dto.SituacoesDto;
 import com.example.parlamento.api.mapper.DeputadoApiMapper;
 import com.example.parlamento.api.mapper.ProposicaoApiMapper;
 import com.example.parlamento.domain.entity.Deputado;
@@ -67,5 +68,14 @@ public class DeputadoConsultaService {
 				deAutoria(id), doAno(ano), doTipo(tipo), naSituacao(situacao)));
 		return PaginaDto.de(proposicaoRepository.findAll(filtro, pageable),
 				proposicaoMapper::paraResumo, Proposicao::getAtualizadoEm);
+	}
+
+	/** Situações em que o deputado tem proposições, respeitando os demais filtros da tela. */
+	public SituacoesDto listarSituacoesDasProposicoes(Long id, Integer ano, String tipo) {
+		if (!repository.existsById(id)) {
+			throw new RecursoNaoEncontradoException("Deputado", id);
+		}
+		Specification<Proposicao> filtro = Specification.allOf(List.of(deAutoria(id), doAno(ano), doTipo(tipo)));
+		return SituacoesDto.de(proposicaoRepository.contarPorSituacao(filtro));
 	}
 }

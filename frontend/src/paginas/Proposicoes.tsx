@@ -64,7 +64,12 @@ export function Proposicoes() {
             ))}
           </select>
         </label>
-        <SeletorSituacao valor={filtros.situacao} aoMudar={(v) => alterarFiltro('situacao', v)} mostrarTotais />
+        <SeletorSituacao
+          caminho="/api/v1/proposicoes/situacoes"
+          filtros={{ tipo: filtros.tipo, numero: filtros.numero, ano: filtros.ano, ementa: filtros.ementa }}
+          valor={filtros.situacao}
+          aoMudar={(v) => alterarFiltro('situacao', v)}
+        />
         <CampoBusca rotulo="Palavra na ementa" valor={filtros.ementa} placeholder="Ex.: saúde" aoMudar={alterarEmenta} />
         {temFiltro && (
           <button type="button" className="botao secundario" onClick={limpar}>

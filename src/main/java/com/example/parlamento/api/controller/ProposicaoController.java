@@ -53,14 +53,20 @@ public class ProposicaoController {
 		return service.listar(ano, tipo, numero, ementa, situacao, pageable);
 	}
 
-	@Operation(summary = "Lista as situações presentes na base",
-			description = "Situações atuais em que há proposições na base, com quantas estão em cada uma, em ordem "
-					+ "alfabética. A descrição é o valor do filtro `situacao`. É uma fotografia: a situação é "
-					+ "revalidada periodicamente na fonte. Proposições sem situação publicada não entram na lista.")
+	@Operation(summary = "Lista as situações das proposições",
+			description = "Situações atuais em que há proposições, com quantas estão em cada uma, em ordem alfabética. "
+					+ "Aceita os mesmos filtros da busca (exceto `situacao`): só aparecem situações que retornam "
+					+ "resultado com eles (filtro facetado). A descrição é o valor do filtro `situacao`. É uma "
+					+ "fotografia: a situação é revalidada periodicamente na fonte. Proposições sem situação "
+					+ "publicada não entram na lista.")
 	@ApiResponse(responseCode = "200", description = "Situações e totais")
 	@GetMapping("/situacoes")
-	public SituacoesDto listarSituacoes() {
-		return service.listarSituacoes();
+	public SituacoesDto listarSituacoes(
+			@Parameter(description = "Ano da proposição", example = "2025") @RequestParam(required = false) Integer ano,
+			@Parameter(description = "Sigla do tipo (PL, PEC, PLP, PDL)", example = "PL") @RequestParam(required = false) String tipo,
+			@Parameter(description = "Número da proposição") @RequestParam(required = false) Integer numero,
+			@Parameter(description = "Trecho da ementa") @RequestParam(required = false) String ementa) {
+		return service.listarSituacoes(ano, tipo, numero, ementa);
 	}
 
 	@Operation(summary = "Detalha uma proposição",
