@@ -36,7 +36,7 @@ export function Proposicao() {
       {!p.detalheCarregado && (
         <p className="aviso">
           A situação, a data de apresentação, o inteiro teor e a autoria completa desta proposição ainda não foram
-          carregados da Câmara. Eles são buscados automaticamente todos os dias — enquanto isso, veja a página oficial
+          carregados da Câmara. Eles são buscados automaticamente todos os dias. Enquanto isso, veja a página oficial
           no link abaixo.
         </p>
       )}

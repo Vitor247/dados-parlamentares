@@ -109,7 +109,7 @@ function ProposicoesDoDeputado({ id, total }: { id: number; total: number }) {
             <option value="">Todos</option>
             {TIPOS_PROPOSICAO.map((t) => (
               <option key={t.sigla} value={t.sigla}>
-                {t.sigla} — {t.nome}
+                {t.sigla} ({t.nome})
               </option>
             ))}
           </select>

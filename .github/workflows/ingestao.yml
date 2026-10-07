@@ -4,7 +4,9 @@ name: Ingestão agendada
 # dispararia. Quem agenda é o GitHub: a primeira chamada acorda a API.
 on:
   schedule:
-    - cron: "0 6 * * *" # todo dia às 06:00 UTC (03:00 em Brasília)
+    # Todo dia às 06:17 UTC (03:17 em Brasília). Fora da hora cheia de propósito: o GitHub
+    # atrasa mais os agendamentos no minuto 0, quando concentra a maior parte da fila.
+    - cron: "17 6 * * *"
   workflow_dispatch:
     inputs:
       carga_base:
@@ -32,9 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -42,7 +44,7 @@ jobs:
         env:
           API_URL: ${{ vars.API_URL }}
           ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
-          # No agendamento não há inputs: vale o padrão (carga base + 40 lotes). Com ~28 mil
+          # No agendamento não há inputs: vale o padrão (carga base + 40 lotes). Com ~23 mil
           # proposições e validade de 7 dias, ~4 mil revalidações por noite mantêm o ciclo em dia.
           CARGA_BASE: ${{ github.event_name == 'schedule' || inputs.carga_base }}
           LOTES: ${{ inputs.lotes || 40 }}

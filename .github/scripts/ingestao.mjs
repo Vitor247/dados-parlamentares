@@ -14,6 +14,8 @@
  *                  esbarram em limite de tempo de requisição da hospedagem)
  */
 import { appendFileSync } from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
 
 const API_URL = obrigatoria('API_URL').replace(/\/+$/, '');
 const ADMIN_API_KEY = obrigatoria('ADMIN_API_KEY');
@@ -92,19 +94,39 @@ async function acordar() {
 }
 
 async function post(caminho, timeoutMs) {
-  const r = await fetch(API_URL + caminho, {
-    method: 'POST',
-    headers: { 'X-Admin-Key': ADMIN_API_KEY },
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  const corpo = await r.text();
-  if (!r.ok) {
+  const { status, corpo } = await postSemLimiteOculto(API_URL + caminho, timeoutMs);
+  if (status < 200 || status >= 300) {
     // StandardError da API: a mensagem já explica (401 chave errada, 502 Câmara fora...).
     let mensagem = corpo;
     try { mensagem = JSON.parse(corpo).mensagem ?? corpo; } catch { /* corpo não-JSON */ }
-    throw new Error(`POST ${caminho} respondeu ${r.status}: ${mensagem}`);
+    throw new Error(`POST ${caminho} respondeu ${status}: ${mensagem}`);
   }
   return JSON.parse(corpo);
+}
+
+/**
+ * POST com node:http(s) em vez de fetch. O fetch do Node (undici) tem um limite próprio de
+ * 5 minutos para receber os cabeçalhos da resposta (headersTimeout), que ignora o AbortSignal:
+ * a carga base leva mais que isso na instância gratuita, e a conexão caía com "fetch failed".
+ * Aqui o único limite é o timeoutMs informado.
+ */
+function postSemLimiteOculto(url, timeoutMs) {
+  const cliente = url.startsWith('https:') ? https : http;
+  return new Promise((resolve, reject) => {
+    const req = cliente.request(url, { method: 'POST', headers: { 'X-Admin-Key': ADMIN_API_KEY } }, (res) => {
+      const partes = [];
+      res.on('data', (parte) => partes.push(parte));
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, corpo: Buffer.concat(partes).toString('utf8') }));
+      res.on('error', reject);
+    });
+    const limite = setTimeout(
+      () => req.destroy(new Error(`sem resposta em ${Math.round(timeoutMs / MINUTO)} min`)),
+      timeoutMs,
+    );
+    req.on('close', () => clearTimeout(limite));
+    req.on('error', reject);
+    req.end();
+  });
 }
 
 function obrigatoria(nome) {

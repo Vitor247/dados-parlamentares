@@ -62,7 +62,7 @@ export function Inicio() {
 function Numero({ valor, rotulo, para }: { valor: number | undefined; rotulo: string; para?: string }) {
   const conteudo = (
     <>
-      <strong>{valor === undefined ? '—' : formatarNumero(valor)}</strong>
+      <strong>{valor === undefined ? '…' : formatarNumero(valor)}</strong>
       <span>{rotulo} na base</span>
     </>
   )

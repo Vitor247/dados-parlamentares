@@ -81,7 +81,7 @@ public class OpenApiConfig {
 
 				## Convenções
 				- Paginação: `page` começa em **0**; `size` padrão 20, máximo 100.
-				- Campos que a fonte não publica vêm como `null` — nunca são omitidos nem preenchidos com zero.
+				- Campos que a fonte não publica vêm como `null`: nunca são omitidos nem preenchidos com zero.
 				- Erros seguem o formato `StandardError` (`timestamp`, `status`, `erro`, `mensagem`, `caminho`).
 				""".formatted(recorte.legislatura(), recorte.dataApresentacaoInicio(),
 				String.join(", ", recorte.tiposProposicao()), descreverDuracao(recorte.validadeSituacao()));

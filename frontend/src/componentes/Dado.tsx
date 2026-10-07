@@ -1,4 +1,4 @@
-/** Par rótulo/valor de uma lista de dados. Sem dado na fonte, diz isso — nunca some nem vira zero. */
+/** Par rótulo/valor de uma lista de dados. Sem dado na fonte, diz isso: nunca some nem vira zero. */
 export function Dado({ rotulo, valor }: { rotulo: string; valor: string | null }) {
   return (
     <div>

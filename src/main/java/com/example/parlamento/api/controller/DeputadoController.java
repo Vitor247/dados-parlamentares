@@ -51,7 +51,7 @@ public class DeputadoController {
 	}
 
 	@Operation(summary = "Detalha um deputado",
-			description = "Inclui dados pessoais publicados pela fonte e `totalProposicoes` — contagem do que está "
+			description = "Inclui dados pessoais publicados pela fonte e `totalProposicoes`, a contagem do que está "
 					+ "na base, dentro do recorte importado; não é métrica de produtividade.")
 	@ApiResponse(responseCode = "200", description = "Deputado encontrado")
 	@ApiResponse(responseCode = "404", description = "Deputado não encontrado",
