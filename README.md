@@ -2,7 +2,9 @@
 
 Plataforma que responde três perguntas sobre a Câmara dos Deputados, com dados oficiais da [API de Dados Abertos da Câmara](https://dadosabertos.camara.leg.br): **quem são os deputados federais e de que partido são, o que cada um propôs e em que situação está cada proposição**.
 
-<!-- Links de produção: **[Site](https://...)** · **[Documentação da API (Swagger)](https://.../swagger-ui.html)** -->
+**API pública:** [documentação interativa (Swagger)](https://parlamento-api.onrender.com/swagger-ui.html), onde dá para testar cada endpoint no navegador. Endereço base: `https://parlamento-api.onrender.com/api/v1`. Uso livre, sem cadastro nem chave; a primeira chamada depois de um período sem acesso pode levar cerca de 2 minutos.
+
+<!-- Link do site: **[Site](https://...)** -->
 
 **Não é ferramenta de avaliação política:** não há ranking, nota ou classificação. O sistema entrega o dado; a interpretação é de quem consulta.
 
@@ -33,11 +35,9 @@ API da Câmara ──► Ingestão ──► PostgreSQL ──► API REST (/api
 
 A ingestão roda em duas fases: a **carga base** importa partidos, deputados e as proposições de cada deputado; o **enriquecimento** completa cada proposição com situação, data, inteiro teor e autoria completa, e revalida periodicamente as situações, que mudam ao longo da tramitação.
 
-### Modelo de dados
+### Modelo conceitual
 
 ![Modelo conceitual do banco](https://raw.githubusercontent.com/Vitor247/assets/main/dados-parlamentares/model.png)
-
-Um partido tem vários deputados. Deputados e proposições se relacionam muitos-para-muitos pela autoria, que guarda a ordem de assinatura e se o autor é proponente. O autor nem sempre é deputado (Poder Executivo, Senado, comissões), por isso o vínculo com o deputado é opcional. O log de ingestão é independente e registra cada unidade processada.
 
 ## Destaques técnicos
 
