@@ -59,14 +59,16 @@ Alternativa sem carga local: pule este passo (o Flyway cria as tabelas vazias) e
 A base começa vazia. A ingestão é disparada pelos endpoints `/admin`, que exigem a chave de administração no header `X-Admin-Key` (variável `ADMIN_API_KEY` no servidor — **sem chave configurada, a administração fica bloqueada**, 403). No Swagger, use o botão **Authorize**.
 
 ```bash
-# Fase A — carga base: partidos → deputados → proposições por autoria
+# Fase A — carga base: partidos → deputados → proposições por autoria.
+# Roda em segundo plano: responde 202 com o id da execução, consultado em /execucoes/{id}.
 curl -X POST -H "X-Admin-Key: $ADMIN_API_KEY" http://localhost:8080/api/v1/admin/ingestao/base
+curl -H "X-Admin-Key: $ADMIN_API_KEY" http://localhost:8080/api/v1/admin/ingestao/execucoes/ID_DA_EXECUCAO
 
 # Fase B — enriquecimento: situação, data, inteiro teor e autoria completa, em lotes
 curl -X POST -H "X-Admin-Key: $ADMIN_API_KEY" "http://localhost:8080/api/v1/admin/ingestao/enriquecimento?limite=500"
 ```
 
-As duas fases são **idempotentes** (podem rodar de novo sem duplicar dados) e a Fase B é **retomável**: o que falha continua na fila. Cada unidade processada gera uma linha em `ingestao_log` (`SUCESSO`, `PARCIAL` ou `FALHA`).
+A carga base é **assíncrona** porque leva ~15 min na instância gratuita, e o proxy da hospedagem corta requisições que ficam esse tempo sem resposta (502). Só uma roda por vez (a segunda recebe 409). As duas fases são **idempotentes** (podem rodar de novo sem duplicar dados) e a Fase B é **retomável**: o que falha continua na fila. Cada unidade processada gera uma linha em `ingestao_log` (`SUCESSO`, `PARCIAL` ou `FALHA`).
 
 ### Ingestão agendada
 

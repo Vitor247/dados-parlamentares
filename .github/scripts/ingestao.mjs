@@ -31,8 +31,11 @@ try {
   await acordar();
 
   if (CARGA_BASE) {
-    console.log('Fase A: carga base...');
-    const r = await post('/api/v1/admin/ingestao/base', 20 * MINUTO);
+    // A carga base leva ~15 min na instância gratuita, e o proxy da hospedagem corta requisições
+    // longas (502). Por isso a API só a dispara (202) e o andamento é consultado aos poucos.
+    const execucao = await requisitar('POST', '/api/v1/admin/ingestao/base', MINUTO);
+    console.log(`Fase A: carga base disparada (execução ${execucao.id}), acompanhando...`);
+    const r = await aguardarCargaBase(execucao.id);
     for (const e of r.etapas) {
       console.log(`  ${e.recurso}: ${e.processados} processados, ${e.falhas} falhas`);
       resumo.push(`| ${e.recurso} | ${e.processados} | ${e.falhas} |`);
@@ -45,7 +48,7 @@ try {
   let pendentes = null;
   let desatualizadas = null;
   for (let lote = 1; lote <= LOTES; lote++) {
-    const r = await post(`/api/v1/admin/ingestao/enriquecimento?limite=${TAMANHO_LOTE}`, 10 * MINUTO);
+    const r = await requisitar('POST', `/api/v1/admin/ingestao/enriquecimento?limite=${TAMANHO_LOTE}`, 10 * MINUTO);
     const etapa = r.etapas[0];
     processados += etapa.processados;
     falhas += etapa.falhas;
@@ -93,27 +96,43 @@ async function acordar() {
   throw new Error('A API não respondeu ao health check em 5 minutos');
 }
 
-async function post(caminho, timeoutMs) {
-  const { status, corpo } = await postSemLimiteOculto(API_URL + caminho, timeoutMs);
+/** Consulta a execução a cada 20 s até terminar. Cada consulta é curta e mantém a instância acordada. */
+async function aguardarCargaBase(id) {
+  const limite = Date.now() + 90 * MINUTO;
+  while (Date.now() < limite) {
+    await new Promise((ok) => setTimeout(ok, 20_000));
+    const e = await requisitar('GET', `/api/v1/admin/ingestao/execucoes/${id}`, MINUTO);
+    if (e.status === 'CONCLUIDA') return e.resultado;
+    if (e.status === 'FALHOU') throw new Error(`A carga base falhou na API: ${e.erro}`);
+  }
+  throw new Error('A carga base não terminou em 90 minutos');
+}
+
+async function requisitar(metodo, caminho, timeoutMs) {
+  const { status, corpo } = await requisicaoSemLimiteOculto(metodo, API_URL + caminho, timeoutMs);
   if (status < 200 || status >= 300) {
-    // StandardError da API: a mensagem já explica (401 chave errada, 502 Câmara fora...).
-    let mensagem = corpo;
-    try { mensagem = JSON.parse(corpo).mensagem ?? corpo; } catch { /* corpo não-JSON */ }
-    throw new Error(`POST ${caminho} respondeu ${status}: ${mensagem}`);
+    let mensagem;
+    if (corpo.trimStart().startsWith('<')) {
+      // Página HTML: o erro veio do proxy da hospedagem, não da API (que sempre responde JSON).
+      mensagem = 'resposta HTML do proxy da hospedagem (a requisição não chegou à API ou foi cortada)';
+    } else {
+      // StandardError da API: a mensagem já explica (401 chave errada, 404 execução perdida...).
+      try { mensagem = JSON.parse(corpo).mensagem ?? corpo; } catch { mensagem = corpo; }
+    }
+    throw new Error(`${metodo} ${caminho} respondeu ${status}: ${mensagem}`);
   }
   return JSON.parse(corpo);
 }
 
 /**
- * POST com node:http(s) em vez de fetch. O fetch do Node (undici) tem um limite próprio de
- * 5 minutos para receber os cabeçalhos da resposta (headersTimeout), que ignora o AbortSignal:
- * a carga base leva mais que isso na instância gratuita, e a conexão caía com "fetch failed".
- * Aqui o único limite é o timeoutMs informado.
+ * Requisição com node:http(s) em vez de fetch. O fetch do Node (undici) tem um limite próprio
+ * de 5 minutos para receber os cabeçalhos da resposta (headersTimeout), que ignora o AbortSignal
+ * e já derrubou lotes lentos com "fetch failed". Aqui o único limite é o timeoutMs informado.
  */
-function postSemLimiteOculto(url, timeoutMs) {
+function requisicaoSemLimiteOculto(metodo, url, timeoutMs) {
   const cliente = url.startsWith('https:') ? https : http;
   return new Promise((resolve, reject) => {
-    const req = cliente.request(url, { method: 'POST', headers: { 'X-Admin-Key': ADMIN_API_KEY } }, (res) => {
+    const req = cliente.request(url, { method: metodo, headers: { 'X-Admin-Key': ADMIN_API_KEY } }, (res) => {
       const partes = [];
       res.on('data', (parte) => partes.push(parte));
       res.on('end', () => resolve({ status: res.statusCode ?? 0, corpo: Buffer.concat(partes).toString('utf8') }));

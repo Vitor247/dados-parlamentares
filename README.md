@@ -80,7 +80,8 @@ Prefixo `/api/v1`. Detalhes, parâmetros e modelos no Swagger.
 | GET | `/proposicoes?ano=&tipo=&numero=&ementa=&situacao=` | Busca proposições |
 | GET | `/proposicoes/situacoes` | Situações presentes na base, com totais |
 | GET | `/proposicoes/{id}` · `/proposicoes/{id}/autores` | Detalhe, situação e autoria |
-| POST | `/admin/ingestao/base` · `/admin/ingestao/enriquecimento` | Ingestão (header `X-Admin-Key`) |
+| POST | `/admin/ingestao/base` · `/admin/ingestao/enriquecimento` | Ingestão (header `X-Admin-Key`); a carga base roda em segundo plano |
+| GET | `/admin/ingestao/execucoes/{id}` | Andamento da carga base |
 
 Paginação com `page` (a partir de 0) e `size` (padrão 20, máximo 100).
 

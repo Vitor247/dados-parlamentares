@@ -46,6 +46,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return responder(e.getStatus(), e.getMessage(), request.getRequestURI());
 	}
 
+	@ExceptionHandler(ConflitoException.class)
+	ResponseEntity<StandardError> conflito(ConflitoException e, HttpServletRequest request) {
+		return responder(HttpStatus.CONFLICT, e.getMessage(), request.getRequestURI());
+	}
+
 	@ExceptionHandler(ParametroInvalidoException.class)
 	ResponseEntity<StandardError> parametroInvalido(ParametroInvalidoException e, HttpServletRequest request) {
 		return responder(HttpStatus.BAD_REQUEST, e.getMessage(), request.getRequestURI());
@@ -120,6 +125,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			case 403 -> "Proibido";
 			case 404 -> "Não encontrado";
 			case 405 -> "Método não permitido";
+			case 409 -> "Conflito";
 			case 502 -> "Fonte externa indisponível";
 			case 500 -> "Erro interno";
 			default -> status instanceof HttpStatus hs ? hs.getReasonPhrase() : "Erro";

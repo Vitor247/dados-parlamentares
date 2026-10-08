@@ -1,7 +1,9 @@
 package com.example.parlamento.api.controller;
 
 import com.example.parlamento.config.OpenApiConfig;
+import com.example.parlamento.exception.RecursoNaoEncontradoException;
 import com.example.parlamento.exception.StandardError;
+import com.example.parlamento.ingestao.service.ExecucaoCargaBaseService;
 import com.example.parlamento.ingestao.service.IngestaoService;
 import com.example.parlamento.ingestao.service.ResultadoIngestao;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,12 +14,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Disparo manual e síncrono da ingestão. Protegido por chave (ver AdminApiKeyInterceptor). */
+import java.net.URI;
+import java.util.UUID;
+
+/** Disparo manual da ingestão. Protegido por chave (ver AdminApiKeyInterceptor). */
 @Tag(name = "Administração")
 @SecurityRequirement(name = OpenApiConfig.ESQUEMA_ADMIN)
 @RestController
@@ -29,20 +37,37 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminIngestaoController {
 
 	private final IngestaoService ingestaoService;
+	private final ExecucaoCargaBaseService execucoes;
 
-	public AdminIngestaoController(IngestaoService ingestaoService) {
+	public AdminIngestaoController(IngestaoService ingestaoService, ExecucaoCargaBaseService execucoes) {
 		this.ingestaoService = ingestaoService;
+		this.execucoes = execucoes;
 	}
 
-	@Operation(summary = "Executa a carga base (Fase A)",
-			description = "Síncrono. Importa partidos → deputados → proposições por autoria, dentro do recorte "
-					+ "configurado. Idempotente: pode ser executado de novo sem duplicar dados. Leva alguns minutos.")
-	@ApiResponse(responseCode = "200", description = "Resumo da execução, por etapa")
-	@ApiResponse(responseCode = "502", description = "API da Câmara indisponível mesmo após as retentativas",
+	@Operation(summary = "Dispara a carga base (Fase A) em segundo plano",
+			description = "Assíncrono: responde na hora com o id da execução e importa, em segundo plano, partidos → "
+					+ "deputados → proposições por autoria, dentro do recorte configurado. Acompanhe por "
+					+ "`GET /execucoes/{id}` (também no header `Location`). Idempotente. Uma carga por vez.")
+	@ApiResponse(responseCode = "202", description = "Carga iniciada")
+	@ApiResponse(responseCode = "409", description = "Já existe uma carga base em andamento",
 			content = @Content(schema = @Schema(implementation = StandardError.class)))
 	@PostMapping("/base")
-	public ResultadoIngestao cargaBase() {
-		return ingestaoService.executarCargaBase();
+	public ResponseEntity<ExecucaoCargaBaseService.Execucao> cargaBase() {
+		ExecucaoCargaBaseService.Execucao execucao = execucoes.iniciar();
+		return ResponseEntity.accepted()
+				.location(URI.create("/api/v1/admin/ingestao/execucoes/" + execucao.id()))
+				.body(execucao);
+	}
+
+	@Operation(summary = "Consulta uma execução da carga base",
+			description = "Status `EM_ANDAMENTO`, `CONCLUIDA` (com o resultado por etapa) ou `FALHOU` (com o erro). "
+					+ "As execuções ficam em memória: depois de um reinício da API, a consulta responde 404.")
+	@ApiResponse(responseCode = "200", description = "Situação da execução")
+	@ApiResponse(responseCode = "404", description = "Execução não encontrada",
+			content = @Content(schema = @Schema(implementation = StandardError.class)))
+	@GetMapping("/execucoes/{id}")
+	public ExecucaoCargaBaseService.Execucao execucao(@PathVariable UUID id) {
+		return execucoes.buscar(id).orElseThrow(() -> new RecursoNaoEncontradoException("Execução", id));
 	}
 
 	@Operation(summary = "Enriquece proposições pendentes (Fase B)",
